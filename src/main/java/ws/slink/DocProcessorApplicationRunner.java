@@ -39,13 +39,31 @@ public class DocProcessorApplicationRunner implements CommandLineRunner {
     }
 
     private void process(Document document, String convertedDocument) {
-        if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl)
-            && StringUtils.isNotBlank(document.space())
-            && StringUtils.isNotBlank(document.title())
-        ) {
-            // publish to confluence
-            confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
-            confluence.publishPage(document.space(), document.title(), convertedDocument);
+        if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl)) {
+            if (!confluence.canPublish()) {
+                System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
+            } else {
+                if (!document.canPublish()) {
+                    System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
+                } else {
+                    // publish to confluence
+                    confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
+                    confluence.publishPage(
+                            document.space(),
+                            document.title(),
+                            document.parent(),
+                            convertedDocument
+                    );
+                    System.out.println(
+                        String.format(
+                            "published to confluence: %s/display/%s/%s",
+                            commandLineArguments.confluenceUrl,
+                            document.space(),
+                            document.title().replaceAll(" ", "+")
+                        )
+                    );
+                }
+            }
         } else {
             // or print to stdout
             System.out.println(convertedDocument);

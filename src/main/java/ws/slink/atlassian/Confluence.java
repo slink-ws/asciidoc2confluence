@@ -1,15 +1,18 @@
 package ws.slink.atlassian;
 
-import ws.slink.tools.FluentJson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import ws.slink.tools.FluentJson;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -41,13 +44,20 @@ public class Confluence {
         restTemplate.exchange(url, HttpMethod.DELETE, prepare(null), String.class);
         restTemplate.exchange(url + "?status=trashed", HttpMethod.DELETE, prepare(null), String.class);
     }
-    public void publishPage(String space, String title, String content) {
+    public void publishPage(String space, String title, String parent, String content) {
         String url = String.format("%s/rest/api/content", baseUrl);
         FluentJson fj = new FluentJson()
             .set("type", "page")
             .set("title", title)
             .set("space", new FluentJson().set("key", space))
             .set("body", new FluentJson().set("storage", new FluentJson().set("value", content).set("representation", "storage")));
+        if (StringUtils.isNotBlank(parent))
+            getPageId(space, parent).ifPresent(parentId -> {
+                List<JSONObject> list = new ArrayList<>();
+                list.add((JSONObject) new FluentJson().set("id", Long.valueOf(parentId)).get());
+                fj.set("ancestors", list);
+            });
+            log.trace("DATA: {}", fj.toString());
         try {
             ResponseEntity<String> response = new RestTemplate().exchange(url, HttpMethod.POST, prepare(fj.toString()), String.class);
             if (response.getStatusCode().isError()) {
@@ -73,4 +83,10 @@ public class Confluence {
             return new HttpEntity<>(data, headers);
     }
 
+    public boolean canPublish() {
+        return
+            StringUtils.isNotBlank(baseUrl)
+         && StringUtils.isNotBlank(user)
+         && StringUtils.isNotBlank(pass);
+    }
 }

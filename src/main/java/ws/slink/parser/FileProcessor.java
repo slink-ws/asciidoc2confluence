@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 @Component
 public class FileProcessor {
 
+    private static final String SPACE_KEY_TEMPLATE = ":DOCUMENT-SPACE-KEY:";
+    private static final String TITLE_TEMPLATE     = ":DOCUMENT-TITLE:";
+    private static final String PARENT_TEMPLATE    = ":DOCUMENT-PARENT:";
+
     @Autowired
     private CommandLineArguments commandLineArguments;
 
@@ -77,21 +81,30 @@ public class FileProcessor {
             new Document()
                 .space(lines
                     .stream()
-                    .filter(s -> s.contains(":DOCUMENT-SPACE:"))
+                    .filter(s -> s.contains(SPACE_KEY_TEMPLATE))
                     .findFirst()
                     .orElse("")
-                    .replace(":DOCUMENT-SPACE:", "")
+                    .replace(SPACE_KEY_TEMPLATE, "")
                     .replace("/", "")
                     .trim()
                 )
                 .title(lines
                     .stream()
-                    .filter(s -> s.contains(":DOCUMENT-TITLE:"))
+                    .filter(s -> s.contains(TITLE_TEMPLATE))
                     .findFirst()
                     .orElse("")
-                    .replace(":DOCUMENT-TITLE:", "")
+                    .replace(TITLE_TEMPLATE, "")
                     .replace("/", "")
                     .trim()
+                )
+                .parent(lines
+                        .stream()
+                        .filter(s -> s.contains(PARENT_TEMPLATE))
+                        .findFirst()
+                        .orElse("")
+                        .replace(PARENT_TEMPLATE, "")
+                        .replace("/", "")
+                        .trim()
                 )
                 .inputFilename(inputFilename)
                 .outputFilename(commandLineArguments.outputFilename)
