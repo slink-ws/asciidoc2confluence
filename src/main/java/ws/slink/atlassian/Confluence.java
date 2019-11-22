@@ -1,6 +1,6 @@
-package com.dxfeed.atlassian;
+package ws.slink.atlassian;
 
-import com.dxfeed.tools.FluentJson;
+import ws.slink.tools.FluentJson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;

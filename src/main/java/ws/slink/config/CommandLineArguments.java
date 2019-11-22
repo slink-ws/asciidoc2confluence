@@ -1,4 +1,4 @@
-package com.dxfeed.config;
+package ws.slink.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -43,7 +43,7 @@ public class CommandLineArguments {
     private void printUsage() {
         System.out.println("Usage: ");
 
-        System.out.println("  java -jar dxfeed-docs-parser.jar --input=<asciidoc filename> [--output=<html filename>] [--url=<confluence url> --user=<login> --pass=<password>]");
+        System.out.println("  java -jar asciidoc2confluence.jar --input=<asciidoc filename> [--output=<html filename>] [--url=<confluence url> --user=<login> --pass=<password>]");
         System.out.println("\t--input\t\tInput AsciiDoc filename to generate documentation from [mandatory argument]");
         System.out.println("\t--output\tIf set, conversion output will be written to this file (overwriting existing files)");
         System.out.println("\t--url\t\tConfluence server base URL (e.g. http://localhost:8090)");

@@ -1,10 +1,10 @@
-package com.dxfeed.parser;
+package ws.slink.parser;
 
-import com.dxfeed.config.CommandLineArguments;
-import com.dxfeed.model.Document;
-import com.dxfeed.processor.CodeBlockPostProcessor;
-import com.dxfeed.processor.CodeBlockPreProcessor;
-import com.dxfeed.processor.CodeBlockProcessor;
+import ws.slink.config.CommandLineArguments;
+import ws.slink.model.Document;
+import ws.slink.processor.CodeBlockPostProcessor;
+import ws.slink.processor.CodeBlockPreProcessor;
+import ws.slink.processor.CodeBlockProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.asciidoctor.Asciidoctor;

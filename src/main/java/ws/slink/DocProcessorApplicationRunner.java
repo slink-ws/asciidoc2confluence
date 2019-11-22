@@ -1,9 +1,9 @@
-package com.dxfeed;
+package ws.slink;
 
-import com.dxfeed.atlassian.Confluence;
-import com.dxfeed.config.CommandLineArguments;
-import com.dxfeed.model.Document;
-import com.dxfeed.parser.FileProcessor;
+import ws.slink.atlassian.Confluence;
+import ws.slink.config.CommandLineArguments;
+import ws.slink.model.Document;
+import ws.slink.parser.FileProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
