@@ -39,7 +39,10 @@ public class DocProcessorApplicationRunner implements CommandLineRunner {
     }
 
     private void process(Document document, String convertedDocument) {
-        if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl)) {
+        if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl)
+            && StringUtils.isNotBlank(document.space())
+            && StringUtils.isNotBlank(document.title())
+        ) {
             // publish to confluence
             confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
             confluence.publishPage(document.space(), document.title(), convertedDocument);
