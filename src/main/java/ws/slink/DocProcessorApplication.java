@@ -15,35 +15,33 @@ import org.springframework.context.event.EventListener;
 
 @Slf4j
 @SpringBootApplication
-@EnableAutoConfiguration
 public class DocProcessorApplication {
 
-	@EventListener(classes = {ContextRefreshedEvent.class})
-	private void handleContextStartedEvent(ContextRefreshedEvent ctxStartEvt) {
-	}
+    @EventListener(classes = {ContextRefreshedEvent.class})
+    public void handleContextStartedEvent(ContextRefreshedEvent ctxStartEvt) {
+    }
 
-	@EventListener(classes = {ContextClosedEvent.class})
-	private void handleContextClosedEvent(ContextClosedEvent ctxCloseEvt) {
-	}
+    @EventListener(classes = {ContextClosedEvent.class})
+    public void handleContextClosedEvent(ContextClosedEvent ctxCloseEvt) {
+    }
 
-	@Bean
-	public CommandLineRunner commandLineRunner() {
-		return new DocProcessorApplicationRunner();
-	}
+    @Autowired
+    private CommandLineArguments commandLineArguments;
 
-	@Autowired
-	private CommandLineArguments commandLineArguments;
+    @Bean
+    public CommandLineRunner commandLineRunner() {
+        return new DocProcessorApplicationRunner();
+    }
 
-	@Bean
-	public Confluence confluenceInstance() {
-		return new Confluence(
-			commandLineArguments.confluenceUrl,
-			commandLineArguments.confluenceUser,
-			commandLineArguments.confluencePassword);
-	}
+    @Bean
+    public Confluence confluenceInstance() {
+        return new Confluence(
+            commandLineArguments.confluenceUrl,
+            commandLineArguments.confluenceUser,
+            commandLineArguments.confluencePassword);
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(DocProcessorApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(DocProcessorApplication.class, args);
+    }
 }

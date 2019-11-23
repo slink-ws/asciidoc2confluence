@@ -14,14 +14,14 @@ import java.util.regex.Pattern;
 public class CodeBlockPreProcessor extends Preprocessor {
 
     private static final String CODE_START = "(.*)(\\[source)(.*\\])(.*)";
-    Pattern p = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private final Pattern p = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
-    public void process (Document document, PreprocessorReader reader) {
+    public void process(Document document, PreprocessorReader reader) {
         List<String> lines = reader.readLines();
         List<String> newLines = new ArrayList<>();
 
-        lines.stream().forEach(line -> {
+        lines.forEach(line -> {
             Matcher m = p.matcher(line);
             if (m.matches()) {
                 String newLine = m.group(1) + "[code" + m.group(3) + m.group(4);

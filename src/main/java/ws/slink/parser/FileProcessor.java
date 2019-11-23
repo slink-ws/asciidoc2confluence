@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 public class FileProcessor {
 
     private static final String SPACE_KEY_TEMPLATE = ":DOCUMENT-SPACE-KEY:";
-    private static final String TITLE_TEMPLATE     = ":DOCUMENT-TITLE:";
-    private static final String PARENT_TEMPLATE    = ":DOCUMENT-PARENT:";
+    private static final String TITLE_TEMPLATE = ":DOCUMENT-TITLE:";
+    private static final String PARENT_TEMPLATE = ":DOCUMENT-PARENT:";
 
     @Autowired
     private CommandLineArguments commandLineArguments;
@@ -43,7 +43,8 @@ public class FileProcessor {
             field.setAccessible(true);
             Object unsafe = field.get(null);
 
-            Method putObjectVolatile = unsafeClass.getDeclaredMethod("putObjectVolatile", Object.class, long.class, Object.class);
+            Method putObjectVolatile =
+                unsafeClass.getDeclaredMethod("putObjectVolatile", Object.class, long.class, Object.class);
             Method staticFieldOffset = unsafeClass.getDeclaredMethod("staticFieldOffset", Field.class);
 
             Class loggerClass = Class.forName("jdk.internal.module.IllegalAccessLogger");
@@ -59,13 +60,13 @@ public class FileProcessor {
         disableAccessWarnings();
         asciidoctor = Asciidoctor.Factory.create();
 
-        // register preprocessors
+        // register pre processors
         asciidoctor.javaExtensionRegistry().preprocessor(CodeBlockPreProcessor.class);
 
         // register block processors
         asciidoctor.javaExtensionRegistry().block(CodeBlockProcessor.class);
 
-        // register postprocessors
+        // register post processors
         asciidoctor.javaExtensionRegistry().postprocessor(CodeBlockPostProcessor.class);
     }
 
@@ -98,17 +99,17 @@ public class FileProcessor {
                     .trim()
                 )
                 .parent(lines
-                        .stream()
-                        .filter(s -> s.contains(PARENT_TEMPLATE))
-                        .findFirst()
-                        .orElse("")
-                        .replace(PARENT_TEMPLATE, "")
-                        .replace("/", "")
-                        .trim()
+                    .stream()
+                    .filter(s -> s.contains(PARENT_TEMPLATE))
+                    .findFirst()
+                    .orElse("")
+                    .replace(PARENT_TEMPLATE, "")
+                    .replace("/", "")
+                    .trim()
                 )
                 .inputFilename(inputFilename)
                 .outputFilename(commandLineArguments.outputFilename)
-                .contents(lines.stream().collect(Collectors.joining("\n")))
+                .contents(String.join("\n", lines))
         );
     }
 

@@ -10,15 +10,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommandLineArguments {
 
-    public String inputFilename       = null;
-    public String outputFilename      = null;
-    public String confluenceUrl       = null;
-    public String confluenceUser      = null;
-    public String confluencePassword  = null;
+    public String inputFilename = null;
+    public String outputFilename = null;
+    public String confluenceUrl = null;
+    public String confluenceUser = null;
+    public String confluencePassword = null;
 
     @Autowired
     public CommandLineArguments(ApplicationArguments args) {
-        if (args.getOptionNames().isEmpty() || args.containsOption("h") || args.containsOption("help") || !args.containsOption("input")) {
+        if (args.getOptionNames().isEmpty() || args.containsOption("h") || args.containsOption("help") ||
+            !args.containsOption("input"))
+        {
             printUsage();
         } else {
             if (args.containsOption("input")) {
@@ -43,20 +45,28 @@ public class CommandLineArguments {
     private void printUsage() {
         System.out.println("Usage: ");
 
-        System.out.println("  java -jar asciidoc2confluence.jar --input=<asciidoc filename> [--output=<html filename>] [--url=<confluence url> --user=<login> --pass=<password>]");
+        System.out.println(
+            "  java -jar asciidoc2confluence.jar --input=<asciidoc filename> [--output=<html filename>] [--url=<confluence url> --user=<login> --pass=<password>]");
         System.out.println("\t--input\t\tInput AsciiDoc filename to generate documentation from [mandatory argument]");
-        System.out.println("\t--output\tIf set, conversion output will be written to this file (overwriting existing files)");
+        System.out
+            .println("\t--output\tIf set, conversion output will be written to this file (overwriting existing files)");
         System.out.println("\t--url\t\tConfluence server base URL (e.g. http://localhost:8090)");
         System.out.println("\t--user\t\tConfluence user with publish rights");
         System.out.println("\t--pass\t\tConfluence user password");
-        System.out.println("\nNote: if none of --output or (--url & --user & --pass) is set, conversion output will be redirected to STDOUT");
+        System.out.println(
+            "\nNote: if none of --output or (--url & --user & --pass) is set, conversion output will be redirected to STDOUT");
         System.exit(1);
     }
 
     private void checkArguments() {
-        if ( StringUtils.isNotBlank(confluenceUrl) && (StringUtils.isBlank(confluenceUser) || StringUtils.isBlank(confluencePassword))
-          || StringUtils.isNotBlank(confluenceUser) && (StringUtils.isBlank(confluenceUrl) || StringUtils.isBlank(confluencePassword))
-          || StringUtils.isNotBlank(confluencePassword) && (StringUtils.isBlank(confluenceUser) || StringUtils.isBlank(confluenceUrl)))
-        printUsage();
+        if (StringUtils.isNotBlank(confluenceUrl) &&
+            (StringUtils.isBlank(confluenceUser) || StringUtils.isBlank(confluencePassword))
+            || StringUtils.isNotBlank(confluenceUser) &&
+            (StringUtils.isBlank(confluenceUrl) || StringUtils.isBlank(confluencePassword))
+            || StringUtils.isNotBlank(confluencePassword) &&
+            (StringUtils.isBlank(confluenceUser) || StringUtils.isBlank(confluenceUrl)))
+        {
+            printUsage();
+        }
     }
 }

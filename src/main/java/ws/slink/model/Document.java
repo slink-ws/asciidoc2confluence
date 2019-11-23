@@ -16,21 +16,22 @@ public class Document {
     private String space;
     private String parent;
     private String contents;
+    private final StringBuilder stringBuilder = new StringBuilder();
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append(title)
-                .append(" (")
-                .append(parent)
-                .append("):")
-                .append(space)
-                .append(" (")
-                .append(inputFilename)
-                .append(":")
-                .append(outputFilename)
-                .append(")")
-                .toString();
+        return stringBuilder
+            .append(title)
+            .append(" (")
+            .append(parent)
+            .append("):")
+            .append(space)
+            .append(" (")
+            .append(inputFilename)
+            .append(":")
+            .append(outputFilename)
+            .append(")")
+            .toString();
     }
 
     public boolean canPublish() {

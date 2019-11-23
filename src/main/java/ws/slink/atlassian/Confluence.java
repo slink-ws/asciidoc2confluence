@@ -35,37 +35,40 @@ public class Confluence {
         AtomicReference<Optional<String>> result = new AtomicReference<>(Optional.empty());
         exchange(url, HttpMethod.GET, prepare(null), "looking for pageId for page #" + title + " in " + space)
             .ifPresent(response -> {
-                try {
-                    result.set(Optional.of(new FluentJson(response.getBody()).get("results").get(0).getString("id").replaceAll("\"", "")));
-                } catch (IndexOutOfBoundsException | ParseException e) {
-                    log.trace("page '{}' not found in '{}'", title, space);
+                    try {
+                        result.set(Optional.of(new FluentJson(response.getBody()).get("results").get(0).getString("id")
+                            .replaceAll("\"", "")));
+                    } catch (IndexOutOfBoundsException | ParseException e) {
+                        log.trace("page '{}' not found in '{}'", title, space);
+                    }
                 }
-            }
-        );
+            );
         return result.get();
     }
+
     public void deletePage(String pageId) {
         String url = String.format("%s/rest/api/content/%s", baseUrl, pageId);
         exchange(url, HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
         exchange(url + "?status=trashed", HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
     }
+
     public boolean publishPage(String space, String title, String parent, String content) {
         String url = String.format("%s/rest/api/content", baseUrl);
         FluentJson fj = new FluentJson()
             .set("type", "page")
             .set("title", title)
             .set("space", new FluentJson().set("key", space))
-            .set("body", new FluentJson().set("storage", new FluentJson().set("value", content).set("representation", "storage")));
-        if (StringUtils.isNotBlank(parent))
+            .set("body", new FluentJson()
+                .set("storage", new FluentJson().set("value", content).set("representation", "storage")));
+        if (StringUtils.isNotBlank(parent)) {
             getPageId(space, parent).ifPresent(parentId -> {
                 List<JSONObject> list = new ArrayList<>();
                 list.add((JSONObject) new FluentJson().set("id", Long.valueOf(parentId)).get());
                 fj.set("ancestors", list);
             });
-            log.trace("DATA: {}", fj.toString());
-            return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent()
-               ? true
-               : false;
+        }
+        log.trace("DATA: {}", fj.toString());
+        return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent();
     }
 
     private HttpEntity<String> prepare(String data) {
@@ -75,24 +78,28 @@ public class Confluence {
         String authHeader = "Basic " + new String(encodedAuth);
         headers.set("Authorization", authHeader);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        if (StringUtils.isBlank(data))
+        if (StringUtils.isBlank(data)) {
             return new HttpEntity<>(headers);
-        else
+        } else {
             return new HttpEntity<>(data, headers);
+        }
     }
-    private Optional<ResponseEntity<String>> exchange(String url, HttpMethod method, HttpEntity httpEntity, String message) {
+
+    private Optional<ResponseEntity<String>> exchange(String url, HttpMethod method, HttpEntity httpEntity,
+        String message)
+    {
         try {
             return Optional.ofNullable(new RestTemplate().exchange(url, method, httpEntity, String.class));
         } catch (ResourceAccessException e) {
             log.warn("Confluence server access exception: {}", e.getMessage());
         } catch (HttpClientErrorException e) {
             switch (e.getStatusCode().value()) {
-                case 403:
-                case 404:
-                    log.warn("Confluence server error {}: {} {}", message, e.getStatusCode(), e.getStatusText());
-                    break;
-                default:
-                    log.error("Unexpected HTTP error {}: {} {}", message, e.getStatusCode(), e.getStatusText());
+            case 403:
+            case 404:
+                log.warn("Confluence server error {}: {} {}", message, e.getStatusCode(), e.getStatusText());
+                break;
+            default:
+                log.error("Unexpected HTTP error {}: {} {}", message, e.getStatusCode(), e.getStatusText());
             }
         }
         return Optional.empty();
@@ -101,7 +108,7 @@ public class Confluence {
     public boolean canPublish() {
         return
             StringUtils.isNotBlank(baseUrl)
-         && StringUtils.isNotBlank(user)
-         && StringUtils.isNotBlank(pass);
+                && StringUtils.isNotBlank(user)
+                && StringUtils.isNotBlank(pass);
     }
 }
