@@ -48,20 +48,27 @@ public class DocProcessorApplicationRunner implements CommandLineRunner {
                 } else {
                     // publish to confluence
                     confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
-                    confluence.publishPage(
-                            document.space(),
-                            document.title(),
-                            document.parent(),
-                            convertedDocument
-                    );
-                    System.out.println(
-                        String.format(
-                            "published to confluence: %s/display/%s/%s",
-                            commandLineArguments.confluenceUrl,
-                            document.space(),
-                            document.title().replaceAll(" ", "+")
-                        )
-                    );
+                    if (confluence.publishPage(
+                        document.space(),
+                        document.title(),
+                        document.parent(),
+                        convertedDocument
+                    ))
+                        System.out.println(
+                            String.format(
+                                 "Published document to confluence: %s/display/%s/%s"
+                                ,commandLineArguments.confluenceUrl
+                                ,document.space()
+                                ,document.title().replaceAll(" ", "+")
+                            )
+                        );
+                    else
+                        System.out.println(
+                            String.format(
+                                "Could not publish document '%s' to confluence server"
+                               ,document.title()
+                            )
+                        );
                 }
             }
         } else {

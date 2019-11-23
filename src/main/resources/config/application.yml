@@ -1,3 +1,6 @@
+server:
+  port: 8088
+
 spring:
   main:
     banner-mode: "off"
@@ -8,6 +11,6 @@ logging:
   #  file: lic-gen.log
   level:
     root: WARN
-    ws.slink: WARN
+    ws.slink: INFO
   pattern:
     console: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"

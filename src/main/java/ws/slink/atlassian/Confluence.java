@@ -7,6 +7,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import ws.slink.tools.FluentJson;
 
@@ -14,6 +15,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class Confluence {
@@ -29,22 +31,25 @@ public class Confluence {
     }
 
     public Optional<String> getPageId(String space, String title) {
-        try {
-            String url = String.format("%s/rest/api/content?title=%s&spaceKey=%s&expand=history", baseUrl, title, space);
-            ResponseEntity<String> response = new RestTemplate().exchange(url, HttpMethod.GET, prepare(null), String.class);
-            return Optional.ofNullable(new FluentJson(response.getBody()).get("results").get(0).getString("id").replaceAll("\"", ""));
-        } catch (ParseException | IndexOutOfBoundsException e) {
-            log.trace("page '{}' not found in '{}'", title, space);
-        }
-        return Optional.empty();
+        String url = String.format("%s/rest/api/content?title=%s&spaceKey=%s&expand=history", baseUrl, title, space);
+        AtomicReference<Optional<String>> result = new AtomicReference<>(Optional.empty());
+        exchange(url, HttpMethod.GET, prepare(null), "looking for pageId for page #" + title + " in " + space)
+            .ifPresent(response -> {
+                try {
+                    result.set(Optional.of(new FluentJson(response.getBody()).get("results").get(0).getString("id").replaceAll("\"", "")));
+                } catch (IndexOutOfBoundsException | ParseException e) {
+                    log.trace("page '{}' not found in '{}'", title, space);
+                }
+            }
+        );
+        return result.get();
     }
     public void deletePage(String pageId) {
         String url = String.format("%s/rest/api/content/%s", baseUrl, pageId);
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.exchange(url, HttpMethod.DELETE, prepare(null), String.class);
-        restTemplate.exchange(url + "?status=trashed", HttpMethod.DELETE, prepare(null), String.class);
+        exchange(url, HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
+        exchange(url + "?status=trashed", HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
     }
-    public void publishPage(String space, String title, String parent, String content) {
+    public boolean publishPage(String space, String title, String parent, String content) {
         String url = String.format("%s/rest/api/content", baseUrl);
         FluentJson fj = new FluentJson()
             .set("type", "page")
@@ -58,16 +63,15 @@ public class Confluence {
                 fj.set("ancestors", list);
             });
             log.trace("DATA: {}", fj.toString());
-        try {
-            ResponseEntity<String> response = new RestTemplate().exchange(url, HttpMethod.POST, prepare(fj.toString()), String.class);
-            if (response.getStatusCode().isError()) {
-                log.trace("could not create page: {} ({}) {}", response.getStatusCode(), response.getStatusCodeValue(), response.getBody());
-            } else {
-                log.trace("created page #{}", title);
-            }
-        } catch (HttpClientErrorException e) {
-            log.trace("error creating page: {}", e.getMessage());
-        }
+//            Optional<ResponseEntity<String>> response =
+            return
+                exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent()
+               ? true
+               : false;
+//            response.ifPresent(
+//                System.err::println
+//            );
+//            return response.isPresent() ? true : false;
     }
 
     private HttpEntity<String> prepare(String data) {
@@ -81,6 +85,23 @@ public class Confluence {
             return new HttpEntity<>(headers);
         else
             return new HttpEntity<>(data, headers);
+    }
+    private Optional<ResponseEntity<String>> exchange(String url, HttpMethod method, HttpEntity httpEntity, String message) {
+        try {
+            return Optional.ofNullable(new RestTemplate().exchange(url, method, httpEntity, String.class));
+        } catch (ResourceAccessException e) {
+            log.warn("Confluence server access exception: {}", e.getMessage());
+        } catch (HttpClientErrorException e) {
+            switch (e.getStatusCode().value()) {
+                case 403:
+                case 404:
+                    log.warn("Confluence server error {}: {} {}", message, e.getStatusCode(), e.getStatusText());
+                    break;
+                default:
+                    log.error("Unexpected HTTP error {}: {} {}", message, e.getStatusCode(), e.getStatusText());
+            }
+        }
+        return Optional.empty();
     }
 
     public boolean canPublish() {
