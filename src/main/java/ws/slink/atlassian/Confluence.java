@@ -63,15 +63,9 @@ public class Confluence {
                 fj.set("ancestors", list);
             });
             log.trace("DATA: {}", fj.toString());
-//            Optional<ResponseEntity<String>> response =
-            return
-                exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent()
+            return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent()
                ? true
                : false;
-//            response.ifPresent(
-//                System.err::println
-//            );
-//            return response.isPresent() ? true : false;
     }
 
     private HttpEntity<String> prepare(String data) {
