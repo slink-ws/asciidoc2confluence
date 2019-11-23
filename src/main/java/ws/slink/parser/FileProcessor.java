@@ -1,18 +1,20 @@
 package ws.slink.parser;
 
-import org.springframework.beans.factory.annotation.Value;
-import ws.slink.config.CommandLineArguments;
-import ws.slink.model.Document;
-import ws.slink.processor.CodeBlockPostProcessor;
-import ws.slink.processor.CodeBlockPreProcessor;
-import ws.slink.processor.CodeBlockProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ws.slink.config.CommandLineArguments;
+import ws.slink.model.Document;
+import ws.slink.processor.CodeBlockPostProcessor;
+import ws.slink.processor.CodeBlockPreProcessor;
+import ws.slink.processor.CodeBlockProcessor;
+import ws.slink.processor.SimpleNoteBlockPostProcessor;
+import ws.slink.processor.SimpleNoteBlockPreprocessor;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -21,7 +23,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -70,12 +71,14 @@ public class FileProcessor {
 
         // register pre processors
         asciidoctor.javaExtensionRegistry().preprocessor(CodeBlockPreProcessor.class);
+        asciidoctor.javaExtensionRegistry().preprocessor(SimpleNoteBlockPreprocessor.class);
 
         // register block processors
         asciidoctor.javaExtensionRegistry().block(CodeBlockProcessor.class);
 
         // register post processors
         asciidoctor.javaExtensionRegistry().postprocessor(CodeBlockPostProcessor.class);
+        asciidoctor.javaExtensionRegistry().postprocessor(SimpleNoteBlockPostProcessor.class);
     }
 
     public Optional<Document> read(String inputFilename) {
