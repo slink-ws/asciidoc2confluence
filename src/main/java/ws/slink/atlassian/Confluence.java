@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class Confluence {
-
     private final String baseUrl;
     private final String user;
     private final String pass;

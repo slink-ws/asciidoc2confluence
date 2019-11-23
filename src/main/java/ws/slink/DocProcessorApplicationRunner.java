@@ -1,5 +1,6 @@
 package ws.slink;
 
+import org.springframework.stereotype.Component;
 import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
@@ -13,6 +14,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import java.io.IOException;
 
 @Slf4j
+@Component
 public class DocProcessorApplicationRunner implements CommandLineRunner {
 
     @Autowired
@@ -25,12 +27,13 @@ public class DocProcessorApplicationRunner implements CommandLineRunner {
     private FileProcessor fileProcessor;
 
     @Autowired
-    Confluence confluence;
+    private Confluence confluence;
+
 
     @Override
-    public void run(String... args) throws IOException {
-        if (StringUtils.isNotBlank(commandLineArguments.inputFilename)) {
-            fileProcessor.read(commandLineArguments.inputFilename).ifPresent(d ->
+    public void run(String... args) {
+        if (StringUtils.isNotBlank(commandLineArguments.getInputFilename())) {
+            fileProcessor.read(commandLineArguments.getInputFilename()).ifPresent(d ->
                 fileProcessor.convert(d).ifPresent(cd -> process(d, cd))
             );
         }
@@ -39,12 +42,14 @@ public class DocProcessorApplicationRunner implements CommandLineRunner {
     }
 
     private void process(Document document, String convertedDocument) {
-        if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl)) {
+        if (StringUtils.isNotBlank(commandLineArguments.getConfluenceUrl())) {
             if (!confluence.canPublish()) {
-                System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
+                System.err.println("can't publish document '" + document.inputFilename() +
+                    "' to confluence: not all confluence parameters are set (url, login, password)");
             } else {
                 if (!document.canPublish()) {
-                    System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
+                    System.err.println("can't publish document '" + document.inputFilename() +
+                        "' to confluence: not all document parameters are set (title, spaceKey)");
                 } else {
                     // publish to confluence
                     confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
@@ -54,21 +59,23 @@ public class DocProcessorApplicationRunner implements CommandLineRunner {
                         document.parent(),
                         convertedDocument
                     ))
+                    {
                         System.out.println(
                             String.format(
-                                 "Published document to confluence: %s/display/%s/%s"
-                                ,commandLineArguments.confluenceUrl
-                                ,document.space()
-                                ,document.title().replaceAll(" ", "+")
+                                "Published document to confluence: %s/display/%s/%s"
+                                , commandLineArguments.getConfluenceUrl()
+                                , document.space()
+                                , document.title().replaceAll(" ", "+")
                             )
                         );
-                    else
+                    } else {
                         System.out.println(
                             String.format(
                                 "Could not publish document '%s' to confluence server"
-                               ,document.title()
+                                , document.title()
                             )
                         );
+                    }
                 }
             }
         } else {

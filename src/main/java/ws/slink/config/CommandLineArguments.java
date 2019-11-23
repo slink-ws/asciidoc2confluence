@@ -1,5 +1,6 @@
 package ws.slink.config;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +10,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class CommandLineArguments {
-
-    public String inputFilename = null;
-    public String outputFilename = null;
-    public String confluenceUrl = null;
-    public String confluenceUser = null;
-    public String confluencePassword = null;
+    @Getter
+    private String inputFilename = null;
+    @Getter
+    private String outputFilename = null;
+    @Getter
+    private String confluenceUrl = null;
+    @Getter
+    private String confluenceUser = null;
+    @Getter
+    private String confluencePassword = null;
 
     @Autowired
     public CommandLineArguments(ApplicationArguments args) {

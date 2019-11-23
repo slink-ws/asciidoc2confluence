@@ -1,5 +1,6 @@
 package ws.slink.parser;
 
+import org.springframework.beans.factory.annotation.Value;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
 import ws.slink.processor.CodeBlockPostProcessor;
@@ -25,15 +26,22 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class FileProcessor {
+    @Value("${space.key.template}")
+    private String spaceKeyTemplate;
 
-    private static final String SPACE_KEY_TEMPLATE = ":DOCUMENT-SPACE-KEY:";
-    private static final String TITLE_TEMPLATE = ":DOCUMENT-TITLE:";
-    private static final String PARENT_TEMPLATE = ":DOCUMENT-PARENT:";
+    @Value("${title.template}")
+    private String titleTemplate;
+
+    @Value("${parent.template}")
+    private String parentTemplate;
+
+    private CommandLineArguments commandLineArguments;
+    private Asciidoctor asciidoctor;
 
     @Autowired
-    private CommandLineArguments commandLineArguments;
-
-    private Asciidoctor asciidoctor;
+    public FileProcessor(CommandLineArguments commandLineArguments) {
+        this.commandLineArguments = commandLineArguments;
+    }
 
     @SuppressWarnings("unchecked")
     private void disableAccessWarnings() {
@@ -82,33 +90,33 @@ public class FileProcessor {
             new Document()
                 .space(lines
                     .stream()
-                    .filter(s -> s.contains(SPACE_KEY_TEMPLATE))
+                    .filter(s -> s.contains(spaceKeyTemplate))
                     .findFirst()
                     .orElse("")
-                    .replace(SPACE_KEY_TEMPLATE, "")
+                    .replace(spaceKeyTemplate, "")
                     .replace("/", "")
                     .trim()
                 )
                 .title(lines
                     .stream()
-                    .filter(s -> s.contains(TITLE_TEMPLATE))
+                    .filter(s -> s.contains(titleTemplate))
                     .findFirst()
                     .orElse("")
-                    .replace(TITLE_TEMPLATE, "")
+                    .replace(titleTemplate, "")
                     .replace("/", "")
                     .trim()
                 )
                 .parent(lines
                     .stream()
-                    .filter(s -> s.contains(PARENT_TEMPLATE))
+                    .filter(s -> s.contains(parentTemplate))
                     .findFirst()
                     .orElse("")
-                    .replace(PARENT_TEMPLATE, "")
+                    .replace(parentTemplate, "")
                     .replace("/", "")
                     .trim()
                 )
                 .inputFilename(inputFilename)
-                .outputFilename(commandLineArguments.outputFilename)
+                .outputFilename(commandLineArguments.getOutputFilename())
                 .contents(String.join("\n", lines))
         );
     }

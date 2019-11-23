@@ -9,17 +9,18 @@ import org.apache.commons.lang.StringUtils;
 @Setter
 @Accessors(fluent = true)
 public class Document {
-
     private String inputFilename;
     private String outputFilename;
     private String title;
     private String space;
     private String parent;
     private String contents;
+
     private final StringBuilder stringBuilder = new StringBuilder();
 
     @Override
     public String toString() {
+        stringBuilder.setLength(0);
         return stringBuilder
             .append(title)
             .append(" (")

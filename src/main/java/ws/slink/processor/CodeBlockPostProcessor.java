@@ -47,7 +47,7 @@ public class CodeBlockPostProcessor extends Postprocessor {
             .append("<ac:structured-macro ac:name=\"code\">")
             .append("<ac:parameter ac:name=\"title\"></ac:parameter>")
             .append("<ac:parameter ac:name=\"theme\">default</ac:parameter>")
-            .append("<ac:parameter ac:name=\"linenumbers\">false</ac:parameter")
+            .append("<ac:parameter ac:name=\"linenumbers\">false</ac:parameter>")
             .append("<ac:parameter ac:name=\"language\">")
             .append(language)
             .append("</ac:parameter>")

@@ -93,17 +93,19 @@ public class FluentJson implements Iterable<Object> {
         return this;
     }
 
-
     public int intValue() {
         return Integer.parseInt(value.toString());
     }
+
     public int getInt(String key) {
         JSONObject o = (JSONObject) value;
         return new FluentJson(o.get(key)).intValue();
     }
+
     public double doubleValue() {
         return Double.parseDouble(value.toString());
     }
+
     public double getDouble(String key) {
         JSONObject o = (JSONObject) value;
         return new FluentJson(o.get(key)).doubleValue();
@@ -171,5 +173,4 @@ public class FluentJson implements Iterable<Object> {
                           .toString();
         System.out.println(run_id);
     }
-
 }
