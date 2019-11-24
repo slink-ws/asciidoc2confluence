@@ -3,12 +3,14 @@ package ws.slink.parser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
 import ws.slink.processor.CodeBlockPostProcessor;
@@ -42,6 +44,8 @@ public class FileProcessor {
     private String parentTemplate;
 
     private final CommandLineArguments commandLineArguments;
+    private final Confluence confluence;
+
     private Asciidoctor asciidoctor;
 
     @SuppressWarnings("unchecked")
@@ -76,6 +80,14 @@ public class FileProcessor {
 
         // register postprocessors
         asciidoctor.javaExtensionRegistry().postprocessor(CodeBlockPostProcessor.class);
+    }
+
+    public void process(String inputFilename) {
+        if (StringUtils.isNotBlank(inputFilename)) {
+            read(inputFilename).ifPresent(d ->
+                convert(d).ifPresent(cd -> publishOrPrint(d, cd))
+            );
+        }
     }
 
     public Optional<Document> read(String inputFilename) {
@@ -134,6 +146,46 @@ public class FileProcessor {
         } catch (Exception e) {
             log.warn("error converting file: {}", e.getMessage());
             return Optional.empty();
+        }
+    }
+
+    public void publishOrPrint(Document document, String convertedDocument) {
+        if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl())) {
+            if (!confluence.canPublish()) {
+                System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
+            } else {
+                if (!document.canPublish()) {
+                    System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
+                } else {
+                    // publish to confluence
+                    confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
+                    if (confluence.publishPage(
+                            document.space(),
+                            document.title(),
+                            document.parent(),
+                            convertedDocument
+                    )) {
+                        System.out.println(
+                                String.format(
+                                        "Published document to confluence: %s/display/%s/%s"
+                                        ,commandLineArguments.confluenceUrl()
+                                        ,document.space()
+                                        ,document.title().replaceAll(" ", "+")
+                                )
+                        );
+                    } else {
+                        System.out.println(
+                                String.format(
+                                        "Could not publish document '%s' to confluence server"
+                                        ,document.title()
+                                )
+                        );
+                    }
+                }
+            }
+        } else {
+            // or print to stdout
+            System.out.println(convertedDocument);
         }
     }
 }

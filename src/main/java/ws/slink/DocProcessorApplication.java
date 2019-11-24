@@ -8,8 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
+import ws.slink.parser.DirectoryProcessor;
 import ws.slink.parser.FileProcessor;
 
 @Slf4j
@@ -19,11 +19,11 @@ public class DocProcessorApplication {
 
 	private final @NonNull CommandLineArguments commandLineArguments;
 	private final @NonNull FileProcessor fileProcessor;
-	private final @NonNull Confluence confluence;
+	private final @NonNull DirectoryProcessor directoryProcessor;
 
 	@Bean
 	public CommandLineRunner commandLineRunner() {
-		return new DocProcessorApplicationRunner(commandLineArguments, fileProcessor, confluence);
+		return new DocProcessorApplicationRunner(commandLineArguments, directoryProcessor, fileProcessor);
 	}
 
 	public static void main(String[] args) {
