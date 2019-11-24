@@ -1,15 +1,18 @@
 package ws.slink.atlassian;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import ws.slink.config.CommandLineArguments;
 import ws.slink.tools.FluentJson;
 
 import java.nio.charset.Charset;
@@ -19,20 +22,14 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor (onConstructor = @__(@Autowired))
 public class Confluence {
 
-    private final String baseUrl;
-    private final String user;
-    private final String pass;
-
-    public Confluence(String baseUrl, String user, String pass) {
-        this.baseUrl = baseUrl;
-        this.user = user;
-        this.pass = pass;
-    }
+    private final CommandLineArguments commandLineArguments;
 
     public Optional<String> getPageId(String space, String title) {
-        String url = String.format("%s/rest/api/content?title=%s&spaceKey=%s&expand=history", baseUrl, title, space);
+        String url = String.format("%s/rest/api/content?title=%s&spaceKey=%s&expand=history", baseUrl(), title, space);
         AtomicReference<Optional<String>> result = new AtomicReference<>(Optional.empty());
         exchange(url, HttpMethod.GET, prepare(null), "looking for pageId for page #" + title + " in " + space)
             .ifPresent(response -> {
@@ -54,12 +51,12 @@ public class Confluence {
         return result.get();
     }
     public void deletePage(String pageId) {
-        String url = String.format("%s/rest/api/content/%s", baseUrl, pageId);
+        String url = String.format("%s/rest/api/content/%s", baseUrl(), pageId);
         exchange(url, HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
         exchange(url + "?status=trashed", HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
     }
     public boolean publishPage(String space, String title, String parent, String content) {
-        String url = String.format("%s/rest/api/content", baseUrl);
+        String url = String.format("%s/rest/api/content", baseUrl());
         FluentJson fj = new FluentJson()
             .set("type", "page")
             .set("title", title)
@@ -80,9 +77,16 @@ public class Confluence {
             return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent();
     }
 
+    public boolean canPublish() {
+        return
+                StringUtils.isNotBlank(baseUrl())
+                        && StringUtils.isNotBlank(user())
+                        && StringUtils.isNotBlank(password());
+    }
+
     private HttpEntity<String> prepare(String data) {
         HttpHeaders headers = new HttpHeaders();
-        String auth = user + ":" + pass;
+        String auth = user() + ":" + password();
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
         String authHeader = "Basic " + new String(encodedAuth);
         headers.set("Authorization", authHeader);
@@ -110,10 +114,14 @@ public class Confluence {
         return Optional.empty();
     }
 
-    public boolean canPublish() {
-        return
-            StringUtils.isNotBlank(baseUrl)
-         && StringUtils.isNotBlank(user)
-         && StringUtils.isNotBlank(pass);
+    private String baseUrl() {
+        return commandLineArguments.confluenceUrl();
     }
+    private String user() {
+        return commandLineArguments.confluenceUser();
+    }
+    private String password() {
+        return commandLineArguments.confluencePassword();
+    }
+
 }

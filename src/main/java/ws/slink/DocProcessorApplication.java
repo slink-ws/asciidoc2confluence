@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
@@ -20,10 +19,11 @@ public class DocProcessorApplication {
 
 	private final @NonNull CommandLineArguments commandLineArguments;
 	private final @NonNull FileProcessor fileProcessor;
+	private final @NonNull Confluence confluence;
 
 	@Bean
 	public CommandLineRunner commandLineRunner() {
-		return new DocProcessorApplicationRunner(commandLineArguments, fileProcessor);
+		return new DocProcessorApplicationRunner(commandLineArguments, fileProcessor, confluence);
 	}
 
 	public static void main(String[] args) {

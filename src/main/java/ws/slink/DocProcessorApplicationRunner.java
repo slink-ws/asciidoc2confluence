@@ -1,5 +1,6 @@
 package ws.slink;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -15,26 +16,16 @@ import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
 import ws.slink.parser.FileProcessor;
 
-import javax.annotation.PostConstruct;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DocProcessorApplicationRunner implements CommandLineRunner, ApplicationContextAware {
 
-    private final CommandLineArguments commandLineArguments;
-    private final FileProcessor fileProcessor;
+    private final @NonNull CommandLineArguments commandLineArguments;
+    private final @NonNull FileProcessor fileProcessor;
+    private final @NonNull Confluence confluence;
 
     private ConfigurableApplicationContext applicationContext;
-    private Confluence confluence;
-
-    @PostConstruct
-    private void init() {
-        confluence = new Confluence(
-            commandLineArguments.confluenceUrl(),
-            commandLineArguments.confluenceUser(),
-            commandLineArguments.confluencePassword());
-    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
