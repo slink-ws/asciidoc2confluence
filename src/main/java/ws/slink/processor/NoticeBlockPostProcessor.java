@@ -45,8 +45,8 @@ public class NoticeBlockPostProcessor extends Postprocessor {
 
     private String getConfluenceNoticeType(String noticeType) {
         switch(noticeType.toLowerCase()) {
-            case "important": return "warning";
-            case "warning"  : return "note";
+            case "warning"  : return "warning";
+            case "important": return "note";
             case "tip"      : return "tip";
             case "note"     :
             default         : return "info";
