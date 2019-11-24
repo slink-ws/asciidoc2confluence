@@ -11,7 +11,6 @@ import org.apache.commons.lang.StringUtils;
 public class Document {
 
     private String inputFilename;
-    private String outputFilename;
     private String title;
     private String space;
     private String parent;
@@ -20,17 +19,15 @@ public class Document {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append(title)
-                .append(" (")
-                .append(parent)
-                .append("):")
-                .append(space)
-                .append(" (")
-                .append(inputFilename)
-                .append(":")
-                .append(outputFilename)
-                .append(")")
-                .toString();
+            .append(title)
+            .append(" (")
+            .append(parent)
+            .append("):")
+            .append(space)
+            .append(" (")
+            .append(inputFilename)
+            .append(")")
+            .toString();
     }
 
     public boolean canPublish() {

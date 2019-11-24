@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -36,7 +37,15 @@ public class Confluence {
         exchange(url, HttpMethod.GET, prepare(null), "looking for pageId for page #" + title + " in " + space)
             .ifPresent(response -> {
                 try {
-                    result.set(Optional.of(new FluentJson(response.getBody()).get("results").get(0).getString("id").replaceAll("\"", "")));
+                    result.set(
+                        Optional.of(
+                            new FluentJson(response.getBody())
+                            .get("results")
+                            .get(0)
+                            .getString("id")
+                            .replaceAll("\"", "")
+                        )
+                    );
                 } catch (IndexOutOfBoundsException | ParseException e) {
                     log.trace("page '{}' not found in '{}'", title, space);
                 }
@@ -55,7 +64,12 @@ public class Confluence {
             .set("type", "page")
             .set("title", title)
             .set("space", new FluentJson().set("key", space))
-            .set("body", new FluentJson().set("storage", new FluentJson().set("value", content).set("representation", "storage")));
+            .set("body", new FluentJson()
+                         .set("storage", new FluentJson()
+                                         .set("value", content)
+                                         .set("representation", "storage")
+                         )
+            );
         if (StringUtils.isNotBlank(parent))
             getPageId(space, parent).ifPresent(parentId -> {
                 List<JSONObject> list = new ArrayList<>();
@@ -63,9 +77,7 @@ public class Confluence {
                 fj.set("ancestors", list);
             });
             log.trace("DATA: {}", fj.toString());
-            return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent()
-               ? true
-               : false;
+            return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent();
     }
 
     private HttpEntity<String> prepare(String data) {

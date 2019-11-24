@@ -13,11 +13,10 @@ import java.util.stream.Collectors;
 public class CodeBlockPostProcessor extends Postprocessor {
 
     @Override
-    public String process (Document document, String convertedDocument) {
-        return
-            Arrays.stream(convertedDocument.split("\n"))
-                .map(this::processString)
-                .collect(Collectors.joining("\n"));
+    public String process(Document document, String convertedDocument) {
+        return Arrays.stream(convertedDocument.split("\n"))
+            .map(this::processString)
+            .collect(Collectors.joining("\n"));
     }
 
     private String processString(String string) {
@@ -34,25 +33,26 @@ public class CodeBlockPostProcessor extends Postprocessor {
     //    https://confluence.atlassian.com/display/CONF55/Code+Block+Macro
     //    https://stackoverflow.com/questions/30194918/how-do-you-insert-a-confluence-macro-into-a-page-created-by-the-confluence-rest
     private String codeOpenElement(String language) {
-        String replacementStr =
-        "<ac:structured-macro ac:name=\"code\">" +
-        "<ac:parameter ac:name=\"title\"></ac:parameter>" +
-        "<ac:parameter ac:name=\"theme\">default</ac:parameter>" +
-        "<ac:parameter ac:name=\"linenumbers\">false</ac:parameter>" +
-        "<ac:parameter ac:name=\"language\">" + language + "</ac:parameter>" +
-        "<ac:parameter ac:name=\"firstline\">0001</ac:parameter>" +
-        "<ac:parameter ac:name=\"collapse\">false</ac:parameter>" +
-        "<ac:plain-text-body>" +
-        "<![CDATA["
+        return new StringBuilder()
+            .append("<ac:structured-macro ac:name=\"code\">")
+            .append("<ac:parameter ac:name=\"title\"></ac:parameter>")
+            .append("<ac:parameter ac:name=\"theme\">default</ac:parameter>")
+            .append("<ac:parameter ac:name=\"linenumbers\">false</ac:parameter>")
+            .append("<ac:parameter ac:name=\"language\">" + language + "</ac:parameter>")
+            .append("<ac:parameter ac:name=\"firstline\">0001</ac:parameter>")
+            .append("<ac:parameter ac:name=\"collapse\">false</ac:parameter>")
+            .append("<ac:plain-text-body>")
+            .append("<![CDATA[")
+            .toString()
         ;
-        return replacementStr;
     }
     private String codeCloseElement() {
-        String replacementStr =
-            "]]>" +
-            "</ac:plain-text-body>" +
-            "</ac:structured-macro>";
-        return replacementStr;
+        return new StringBuilder()
+            .append("]]>")
+            .append("</ac:plain-text-body>")
+            .append("</ac:structured-macro>")
+            .toString()
+        ;
     }
 
     private static final String CODE_START = "(.*)(<pre>)([$]+)([A-Za-z]+)([$]+)(.*)";

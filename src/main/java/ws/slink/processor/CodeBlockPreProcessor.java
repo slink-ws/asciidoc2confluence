@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public class CodeBlockPreProcessor extends Preprocessor {
 
     private static final String CODE_START = "(.*)(\\[source)(.*\\])(.*)";
-    Pattern p = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final Pattern START_PATTERN = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
     public void process (Document document, PreprocessorReader reader) {
@@ -22,11 +22,12 @@ public class CodeBlockPreProcessor extends Preprocessor {
         List<String> newLines = new ArrayList<>();
 
         lines.stream().forEach(line -> {
-            Matcher m = p.matcher(line);
+            Matcher m = START_PATTERN.matcher(line);
             if (m.matches()) {
-                String newLine = m.group(1) + "[code" + m.group(3) + m.group(4);
-                log.trace("> old: {}; new: {}", line, newLine);
-                newLines.add(newLine);
+//                String newLine = m.group(1) + "[code" + m.group(3) + m.group(4);
+//                log.trace("> old: {}; new: {}", line, newLine);
+//                newLines.add(newLine);
+                newLines.add(line.replace(m.group(2), "[code"));
             } else {
                 newLines.add(line);
             }

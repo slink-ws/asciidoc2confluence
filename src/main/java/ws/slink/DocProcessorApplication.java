@@ -1,45 +1,41 @@
 package ws.slink;
 
-import ws.slink.atlassian.Confluence;
-import ws.slink.config.CommandLineArguments;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
+import ws.slink.atlassian.Confluence;
+import ws.slink.config.CommandLineArguments;
+import ws.slink.parser.FileProcessor;
 
 @Slf4j
 @SpringBootApplication
-@EnableAutoConfiguration
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DocProcessorApplication {
 
-	@EventListener(classes = {ContextRefreshedEvent.class})
-	private void handleContextStartedEvent(ContextRefreshedEvent ctxStartEvt) {
-	}
-
-	@EventListener(classes = {ContextClosedEvent.class})
-	private void handleContextClosedEvent(ContextClosedEvent ctxCloseEvt) {
-	}
+	private final @NonNull CommandLineArguments commandLineArguments;
+	private final @NonNull FileProcessor fileProcessor;
+//	private final @NonNull Confluence confluence;
 
 	@Bean
 	public CommandLineRunner commandLineRunner() {
-		return new DocProcessorApplicationRunner();
+		return new DocProcessorApplicationRunner(
+			 commandLineArguments
+			,fileProcessor
+			,confluence()
+		);
 	}
 
-	@Autowired
-	private CommandLineArguments commandLineArguments;
-
-	@Bean
-	public Confluence confluenceInstance() {
+	private Confluence confluence() {
 		return new Confluence(
-			commandLineArguments.confluenceUrl,
-			commandLineArguments.confluenceUser,
-			commandLineArguments.confluencePassword);
+			commandLineArguments.confluenceUrl(),
+			commandLineArguments.confluenceUser(),
+			commandLineArguments.confluencePassword());
 	}
 
 	public static void main(String[] args) {
