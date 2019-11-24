@@ -13,9 +13,7 @@ import org.springframework.stereotype.Component;
 import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
-import ws.slink.processor.CodeBlockPostProcessor;
-import ws.slink.processor.CodeBlockPreProcessor;
-import ws.slink.processor.CodeBlockProcessor;
+import ws.slink.processor.*;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -80,6 +78,7 @@ public class FileProcessor {
 
         // register postprocessors
         asciidoctor.javaExtensionRegistry().postprocessor(CodeBlockPostProcessor.class);
+        asciidoctor.javaExtensionRegistry().postprocessor(NoticeBlockPostProcessor.class);
     }
 
     public void process(String inputFilename) {
@@ -160,25 +159,25 @@ public class FileProcessor {
                     // publish to confluence
                     confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
                     if (confluence.publishPage(
-                            document.space(),
-                            document.title(),
-                            document.parent(),
-                            convertedDocument
+                        document.space(),
+                        document.title(),
+                        document.parent(),
+                        convertedDocument
                     )) {
                         System.out.println(
-                                String.format(
-                                        "Published document to confluence: %s/display/%s/%s"
-                                        ,commandLineArguments.confluenceUrl()
-                                        ,document.space()
-                                        ,document.title().replaceAll(" ", "+")
-                                )
+                            String.format(
+                                "Published document to confluence: %s/display/%s/%s"
+                                ,commandLineArguments.confluenceUrl()
+                                ,document.space()
+                                ,document.title().replaceAll(" ", "+")
+                            )
                         );
                     } else {
                         System.out.println(
-                                String.format(
-                                        "Could not publish document '%s' to confluence server"
-                                        ,document.title()
-                                )
+                            String.format(
+                                "Could not publish document '%s' to confluence server"
+                                ,document.title()
+                            )
                         );
                     }
                 }
