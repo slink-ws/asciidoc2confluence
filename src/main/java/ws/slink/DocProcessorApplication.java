@@ -20,22 +20,10 @@ public class DocProcessorApplication {
 
 	private final @NonNull CommandLineArguments commandLineArguments;
 	private final @NonNull FileProcessor fileProcessor;
-//	private final @NonNull Confluence confluence;
 
 	@Bean
 	public CommandLineRunner commandLineRunner() {
-		return new DocProcessorApplicationRunner(
-			 commandLineArguments
-			,fileProcessor
-			,confluence()
-		);
-	}
-
-	private Confluence confluence() {
-		return new Confluence(
-			commandLineArguments.confluenceUrl(),
-			commandLineArguments.confluenceUser(),
-			commandLineArguments.confluencePassword());
+		return new DocProcessorApplicationRunner(commandLineArguments, fileProcessor);
 	}
 
 	public static void main(String[] args) {

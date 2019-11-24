@@ -1,3 +1,13 @@
+asciidoc:
+  code:
+    language:
+      default: text
+  template:
+    space-key: ":DOCUMENT-SPACE-KEY:"
+    title: ":DOCUMENT-TITLE:"
+    title-old: ":DOCUMENT-TITLE:-OLD"
+    parent: ":DOCUMENT-PARENT:"
+
 server:
   port: 8088
 

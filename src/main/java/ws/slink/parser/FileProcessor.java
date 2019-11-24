@@ -7,6 +7,7 @@ import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
@@ -28,9 +29,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FileProcessor {
 
-    private static final String SPACE_KEY_TEMPLATE = ":DOCUMENT-SPACE-KEY:";
-    private static final String TITLE_TEMPLATE     = ":DOCUMENT-TITLE:";
-    private static final String PARENT_TEMPLATE    = ":DOCUMENT-PARENT:";
+    @Value("${asciidoc.template.space-key}")
+    private String spaceKeyTemplate;
+
+    @Value("${asciidoc.template.title}")
+    private String titleTemplate;
+
+    @Value("${asciidoc.template.title-old}")
+    private String titleOldTemplate;
+
+    @Value("${asciidoc.template.parent}")
+    private String parentTemplate;
 
     private final CommandLineArguments commandLineArguments;
     private Asciidoctor asciidoctor;
@@ -81,28 +90,28 @@ public class FileProcessor {
             new Document()
                 .space(lines
                     .stream()
-                    .filter(s -> s.contains(SPACE_KEY_TEMPLATE))
+                    .filter(s -> s.contains(spaceKeyTemplate))
                     .findFirst()
                     .orElse("")
-                    .replace(SPACE_KEY_TEMPLATE, "")
+                    .replace(spaceKeyTemplate, "")
                     .replace("/", "")
                     .trim()
                 )
                 .title(lines
                     .stream()
-                    .filter(s -> s.contains(TITLE_TEMPLATE))
+                    .filter(s -> s.contains(titleTemplate))
                     .findFirst()
                     .orElse("")
-                    .replace(TITLE_TEMPLATE, "")
+                    .replace(titleTemplate, "")
                     .replace("/", "")
                     .trim()
                 )
                 .parent(lines
                     .stream()
-                    .filter(s -> s.contains(PARENT_TEMPLATE))
+                    .filter(s -> s.contains(parentTemplate))
                     .findFirst()
                     .orElse("")
-                    .replace(PARENT_TEMPLATE, "")
+                    .replace(parentTemplate, "")
                     .replace("/", "")
                     .trim()
                 )

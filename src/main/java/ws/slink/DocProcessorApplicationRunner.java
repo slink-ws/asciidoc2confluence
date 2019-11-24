@@ -15,6 +15,8 @@ import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
 import ws.slink.parser.FileProcessor;
 
+import javax.annotation.PostConstruct;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -22,9 +24,17 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
 
     private final CommandLineArguments commandLineArguments;
     private final FileProcessor fileProcessor;
-    private final Confluence confluence;
 
     private ConfigurableApplicationContext applicationContext;
+    private Confluence confluence;
+
+    @PostConstruct
+    private void init() {
+        confluence = new Confluence(
+            commandLineArguments.confluenceUrl(),
+            commandLineArguments.confluenceUser(),
+            commandLineArguments.confluencePassword());
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
