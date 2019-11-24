@@ -5,12 +5,13 @@ Asciidoc to confluence converter & uploader
 Motivation for this project has rosen from the need to convert AsciiDoc documents with code blocks to confluence. As standard asciidoctor behavior does not let to insert code blocks in format of confluence code macro, we need to postprocess asciidoctor output.
 
 ## Publishing to Confluence
-To publish a document to confluence server its title, spaceKey and (optionally) parent page should be known.
+To publish a document to confluence server its title, spaceKey, old title (optionally) and (optionally) parent page should be known.
 Parser takes these parameters from comments in input file:
 
 ```
 // :DOCUMENT-SPACE-KEY: TEST-SPACE-KEY
 // :DOCUMENT-TITLE: Test Document Title
+// :DOCUMENT-TITLE-OLD: Old document title to be renamed
 // :DOCUMENT-PARENT: Test Parent Page
 ```
 
