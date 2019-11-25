@@ -20,7 +20,7 @@ public class TOCBlockPostProcessor extends Postprocessor {
         settings.syntax(org.jsoup.nodes.Document.OutputSettings.Syntax.xml);
         doc.outputSettings(settings);
 
-        Optional.ofNullable(doc.selectFirst("div")).ifPresent(tocElement -> {
+        Optional.ofNullable(doc.selectFirst("div#toc")).ifPresent(tocElement -> {
             tocElement.replaceWith(Jsoup.parse(tableOfContentsMacro(), "", Parser.xmlParser()).child(0));
         });
 
