@@ -79,6 +79,7 @@ public class FileProcessor {
         // register postprocessors
         asciidoctor.javaExtensionRegistry().postprocessor(CodeBlockPostProcessor.class);
         asciidoctor.javaExtensionRegistry().postprocessor(NoticeBlockPostProcessor.class);
+        asciidoctor.javaExtensionRegistry().postprocessor(TOCBlockPostProcessor.class);
     }
 
     public void process(String inputFilename) {

@@ -14,12 +14,19 @@ public class NoticeBlockPostProcessor extends Postprocessor {
     @Override
     public String process(Document document, String convertedDocument) {
         final org.jsoup.nodes.Document doc = Jsoup.parse(convertedDocument);
+
+        org.jsoup.nodes.Document.OutputSettings settings = new org.jsoup.nodes.Document.OutputSettings();
+        settings.prettyPrint(false);
+        settings.syntax(org.jsoup.nodes.Document.OutputSettings.Syntax.xml);
+        doc.outputSettings(settings);
+
         doc.select("div.admonitionblock").stream().forEach(element -> {
             String noticeType = element.className().replace("admonitionblock ", "");
             Element content = element.selectFirst("td.content");
             org.jsoup.nodes.Document newElement = Jsoup.parse(admonitionBlock(noticeType, content.html()), "", Parser.xmlParser());
             element.replaceWith(newElement.child(0));
         });
+
         return doc.body().toString();
     }
 
