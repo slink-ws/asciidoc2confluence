@@ -43,10 +43,10 @@ The data for program can be provisioned with two ways:
 - directory (`--dir=<directory>`)
     
     In this case directory will be processed recursively. All the *.adoc and *.asciidoc files will be converted (and, 
-    if related argumtnts are set, published to confluence server). Subdirectories are being processed in such a way 
+    if related arguments are set, published to confluence server). Subdirectories are being processed in such a way 
     that at first all files from a directory are being processed, then all the subdirectories are being processed. 
     This means that all the higher-level pages should be placed in higher-level directories, so that parent pages would
-    created before related siblings.
+    be created before related siblings.
     
 If `--dir` and `--input` arguments are used together, only `--dir` key will be considered.
 
@@ -69,21 +69,21 @@ following formats:
 * `link:CONFLUENCESPACE:Page+title[link display text]`
     
     In this case there will be created confluence link, pointing to page titled `Page title` in space `CONFLUENCESPACE` 
-    on the same confluence serve
+    on the same confluence server.
     
 * `link:Page+title[link display text]`
 
-    In this case there will be created confluence link, poiting to page titles `Page title` in the same space, which is
-    used for the page being processed.
+    In this case there will be created confluence link, pointing to page titled `Page title` in the same space, which the
+    page being processed belongs to.
     
-NOTE: When creating links in `link:` format, spaces in page title should be replaces with '+' symbols in 
-source AsciiDoc 
+*NOTE*: When creating links in `link:` format, spaces in page title should be replaces with '+' symbols in 
+source AsciiDoc. 
 
 
 ## Table Of Contents
 To insert TOC macro in resulting confluence page use following syntax:
 
-```asciidoc
+```
 // :DOCUMENT-SPACE-KEY: TESTSPACE
 // :DOCUMENT-TITLE: Main page
 
