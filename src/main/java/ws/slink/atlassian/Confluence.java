@@ -32,7 +32,17 @@ public class Confluence {
     public Optional<String> getPageId(String space, String title) {
         String url = String.format("%s/rest/api/content?title=%s&spaceKey=%s&expand=history", baseUrl(), title, space);
         AtomicReference<Optional<String>> result = new AtomicReference<>(Optional.empty());
-        exchange(url, HttpMethod.GET, prepare(null), "looking for pageId for page #" + title + " in " + space)
+        exchange(
+            url,
+            HttpMethod.GET,
+            prepare(null),
+            new StringBuilder()
+                .append("looking for pageId for page #")
+                .append(title)
+                .append(" in ")
+                .append(space)
+                .toString()
+            )
             .ifPresent(response -> {
                 try {
                     result.set(
@@ -53,8 +63,9 @@ public class Confluence {
     }
     public void deletePage(String pageId) {
         String url = String.format("%s/rest/api/content/%s", baseUrl(), pageId);
-        exchange(url, HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
-        exchange(url + "?status=trashed", HttpMethod.DELETE, prepare(null), "removing page #" + pageId);
+        String errorMessage = new StringBuilder().append("removing page #").append(pageId).toString();
+        exchange(url, HttpMethod.DELETE, prepare(null), errorMessage);
+        exchange(url.concat("?status=trashed"), HttpMethod.DELETE, prepare(null), errorMessage);
     }
     public boolean publishPage(String space, String title, String parent, String content) {
         String url = String.format("%s/rest/api/content", baseUrl());
@@ -77,11 +88,16 @@ public class Confluence {
             });
 
         log.trace("DATA: {}", fj.toString());
-        return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent();
+        return exchange(
+             url
+            ,HttpMethod.POST
+            ,prepare(fj.toString())
+            ,new StringBuilder().append("publishing page #").append(title).toString()
+        ).isPresent();
     }
     public boolean tagPage(String space, String title, List<String> tags) {
 
-        if (null == tags || tags.isEmpty() || tags.size() < 1)
+        if (null == tags || tags.isEmpty())
             return false;
 
         Long pageId = Long.valueOf(getPageId(space, title).orElse("-1"));
@@ -94,14 +110,19 @@ public class Confluence {
             .map(tag -> (JSONObject)new FluentJson().set("name", tag.replaceAll(" ", "_")).set("prefix", "global").get())
             .forEach(labels::add);
 
-        return exchange(url, HttpMethod.POST, prepare(labels.toString()), "tagging page #" + title).isPresent();
+        return exchange(
+            url,
+            HttpMethod.POST,
+            prepare(labels.toString()),
+            new StringBuilder().append("tagging page #").append(title).toString()
+        ).isPresent();
     }
 
     public boolean canPublish() {
         return
-                StringUtils.isNotBlank(baseUrl())
-                        && StringUtils.isNotBlank(user())
-                        && StringUtils.isNotBlank(password());
+            StringUtils.isNotBlank(baseUrl())
+         && StringUtils.isNotBlank(user())
+         && StringUtils.isNotBlank(password());
     }
 
     private HttpEntity<String> prepare(String data) {
@@ -123,6 +144,7 @@ public class Confluence {
             log.warn("Confluence server access exception: {}", e.getMessage());
         } catch (HttpClientErrorException e) {
             switch (e.getStatusCode().value()) {
+                case 400:
                 case 403:
                 case 404:
                     log.warn("Confluence server error {}: {} {}", message, e.getStatusCode(), e.getStatusText());

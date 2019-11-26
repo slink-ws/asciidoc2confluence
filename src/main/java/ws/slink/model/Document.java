@@ -14,7 +14,7 @@ public class Document {
 
     private String inputFilename;
     private String title;
-    private String oldtitle;
+    private String oldTitle;
     private String space;
     private String parent;
     private String contents;

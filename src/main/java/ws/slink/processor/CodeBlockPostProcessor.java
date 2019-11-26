@@ -12,6 +12,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CodeBlockPostProcessor extends Postprocessor {
 
+    private static final String CODE_START = "(.*)(<pre>)([$]+)([A-Za-z]+)([$]+)(.*)";
+    private static final String CODE_END = "([^$]*)([$]+)(</pre>)(.*)";
+    private static final Pattern START_PATTERN = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final Pattern END_PATTERN   = Pattern.compile(CODE_END, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+
     @Override
     public String process(Document document, String convertedDocument) {
         return Arrays.stream(convertedDocument.split("\n"))
@@ -38,7 +43,9 @@ public class CodeBlockPostProcessor extends Postprocessor {
             .append("<ac:parameter ac:name=\"title\"></ac:parameter>")
             .append("<ac:parameter ac:name=\"theme\">default</ac:parameter>")
             .append("<ac:parameter ac:name=\"linenumbers\">false</ac:parameter>")
-            .append("<ac:parameter ac:name=\"language\">" + language + "</ac:parameter>")
+            .append("<ac:parameter ac:name=\"language\">")
+            .append(language)
+            .append("</ac:parameter>")
             .append("<ac:parameter ac:name=\"firstline\">0001</ac:parameter>")
             .append("<ac:parameter ac:name=\"collapse\">false</ac:parameter>")
             .append("<ac:plain-text-body>")
@@ -55,8 +62,4 @@ public class CodeBlockPostProcessor extends Postprocessor {
         ;
     }
 
-    private static final String CODE_START = "(.*)(<pre>)([$]+)([A-Za-z]+)([$]+)(.*)";
-    private static final String CODE_END = "([^$]*)([$]+)(</pre>)(.*)";
-    private static final Pattern START_PATTERN = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-    private static final Pattern END_PATTERN   = Pattern.compile(CODE_END, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 }

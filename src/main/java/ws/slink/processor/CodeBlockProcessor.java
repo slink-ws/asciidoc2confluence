@@ -30,7 +30,17 @@ public class CodeBlockProcessor extends BlockProcessor {
         String language = (String)attributes.get("2");
         if (StringUtils.isBlank(language))
             language = defaultCodeLanguage;
-        Block block = createBlock(parent, "listing",  MARKER + language + MARKER + content + MARKER, attributes);
+        Block block = createBlock(
+             parent
+            ,"listing"
+            ,new StringBuilder()
+                .append(MARKER)
+                .append(language)
+                .append(MARKER)
+                .append(content)
+                .append(MARKER)
+                .toString()
+            ,attributes);
         return block;
     }
 

@@ -59,15 +59,14 @@ public class CommandLineArguments {
     private void printUsage() {
         System.out.println("Usage: ");
 
-        System.out.println("  java -jar asciidoc2confluence.jar {--input=<asciidoc filename> | --dir=<path/to/directory>} [--url=<confluence url> --user=<login> --pass=<password>] [--space=<confluence space key>] [--tags=<tag mappings file>]");
+        System.out.println("  java -jar asciidoc2confluence.jar {--input=<asciidoc filename> | --dir=<path/to/directory>} [--url=<confluence url> --user=<login> --pass=<password>] [--space=<confluence space key>]");
         System.out.println("\t--input\t\tInput AsciiDoc filename to generate documentation from");
         System.out.println("\t--dir\t\tDirectory to process asciidoc files recursively");
-        System.out.println("\t--tags\t\tTag mappings file");
         System.out.println("\t--url\t\tConfluence server base URL (e.g. http://localhost:8090)");
         System.out.println("\t--user\t\tConfluence user with publish rights");
         System.out.println("\t--pass\t\tConfluence user password");
         System.out.println("\t--space\t\tConfluence space key override");
-        System.out.println("\nNote: if (--url & --user & --pass) is set, conversion output will be redirected to STDOUT");
+        System.out.println("\nNote: if (--url & --user & --pass) not set, conversion output will be redirected to STDOUT");
         System.exit(1);
     }
 

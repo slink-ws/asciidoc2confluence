@@ -21,7 +21,7 @@ public class NoticeBlockPostProcessor extends Postprocessor {
         doc.outputSettings(settings);
 
         doc.select("div.admonitionblock").stream().forEach(element -> {
-            String noticeType = element.className().replace("admonitionblock ", "");
+            String noticeType = element.className().replace("admonitionblock", "").trim();
             Element content = element.selectFirst("td.content");
             org.jsoup.nodes.Document newElement = Jsoup.parse(admonitionBlock(noticeType, content.html()), "", Parser.xmlParser());
             element.replaceWith(newElement.child(0));
@@ -32,7 +32,7 @@ public class NoticeBlockPostProcessor extends Postprocessor {
 
 
     // see:
-    //    https://confluence.atlassian.com/display/CONF55/Code+Block+Macro
+    //    https://confluence.atlassian.com/display/CONF55/Note+Macro
     private String admonitionBlock(String noticeType, String content) {
         String confluenceNoticeType = getConfluenceNoticeType(noticeType);
         return new StringBuilder()

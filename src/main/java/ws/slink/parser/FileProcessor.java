@@ -7,8 +7,6 @@ import org.apache.commons.lang.StringUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
-import org.asciidoctor.log.LogHandler;
-import org.asciidoctor.log.LogRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,12 +16,10 @@ import ws.slink.model.Document;
 import ws.slink.processor.*;
 
 import javax.annotation.PostConstruct;
-import javax.swing.plaf.basic.BasicColorChooserUI;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -105,14 +101,11 @@ public class FileProcessor {
     }
 
     public void process(String inputFilename) {
-        if (StringUtils.isNotBlank(inputFilename)) {
-            read(inputFilename).ifPresent(d ->
-                convert(d).ifPresent(cd ->
-                    publishOrPrint(d, cd)));
-        }
+        if (StringUtils.isNotBlank(inputFilename))
+            read(inputFilename).ifPresent(d -> convert(d).ifPresent(cd -> publishOrPrint(d, cd)));
     }
     public Optional<Document> read(String inputFilename) {
-        List<String> lines = null;
+        List<String> lines;
         try {
             lines = FileUtils.readLines(new File(inputFilename), "utf-8");
         } catch (IOException e) {
@@ -123,7 +116,7 @@ public class FileProcessor {
             new Document()
                 .space(getDocumentParam(lines, spaceKeyTemplate, commandLineArguments.confluenceSpaceKey()))
                 .title(getDocumentParam(lines, titleTemplate, null))
-                .oldtitle(getDocumentParam(lines, titleOldTemplate, null))
+                .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
                 .inputFilename(inputFilename)
                 .contents(lines.stream().collect(Collectors.joining("\n")))
@@ -166,8 +159,8 @@ public class FileProcessor {
                     // delete page
                     confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
                     // delete old page in case of renaming
-                    if (StringUtils.isNotBlank(document.oldtitle()))
-                        confluence.getPageId(document.space(), document.oldtitle()).ifPresent(confluence::deletePage);
+                    if (StringUtils.isNotBlank(document.oldTitle()))
+                        confluence.getPageId(document.space(), document.oldTitle()).ifPresent(confluence::deletePage);
                     // publish to confluence
                     if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
                         System.out.println(

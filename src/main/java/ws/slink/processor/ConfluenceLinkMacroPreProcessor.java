@@ -23,7 +23,7 @@ public class ConfluenceLinkMacroPreProcessor extends Preprocessor {
         lines.stream().forEach(line -> {
             Matcher m = START_PATTERN.matcher(line);
             if (m.matches()) {
-                newLines.add(line.replace(m.group(2), "cflink:")/*.replace(m.group(3), m.group(3).replace(" ", "-"))*/);
+                newLines.add(line.replace(m.group(2), "cflink:"));
             } else {
                 newLines.add(line);
             }
