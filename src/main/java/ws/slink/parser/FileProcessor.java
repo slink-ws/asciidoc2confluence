@@ -7,6 +7,8 @@ import org.apache.commons.lang.StringUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
+import org.asciidoctor.log.LogHandler;
+import org.asciidoctor.log.LogRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,10 +18,13 @@ import ws.slink.model.Document;
 import ws.slink.processor.*;
 
 import javax.annotation.PostConstruct;
+import javax.swing.plaf.basic.BasicColorChooserUI;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,10 +46,11 @@ public class FileProcessor {
     @Value("${asciidoc.template.parent}")
     private String parentTemplate;
 
+    @Value("${asciidoc.template.tags}")
+    private String tagsTemplate;
+
     private final CommandLineArguments commandLineArguments;
     private final Confluence confluence;
-
-    private Asciidoctor asciidoctor;
 
     @SuppressWarnings("unchecked")
     private void disableAccessWarnings() {
@@ -66,30 +72,45 @@ public class FileProcessor {
     }
 
     @PostConstruct
-    private void initializeAsciidoctor() {
+    private void init() {
         disableAccessWarnings();
-        this.asciidoctor = Asciidoctor.Factory.create();
+    }
+
+    /**
+     * we need to initialize AsciiDoctor for each document being processed, as we need to know document's space
+     * to create correct inter-document links
+     *
+     * @param document
+     */
+    private Asciidoctor initializeAsciidoctor(Document document) {
+
+        Asciidoctor asciidoctor = Asciidoctor.Factory.create();
 
         // register preprocessors
         asciidoctor.javaExtensionRegistry().preprocessor(CodeBlockPreProcessor.class);
+        asciidoctor.javaExtensionRegistry().preprocessor(ConfluenceLinkMacroPreProcessor.class);
 
         // register block processors
         asciidoctor.javaExtensionRegistry().block(CodeBlockProcessor.class);
+
+        // register (inline) macro processors
+        asciidoctor.javaExtensionRegistry().inlineMacro(new ConfluenceLinkInlineMacroProcessor(document.space()));
 
         // register postprocessors
         asciidoctor.javaExtensionRegistry().postprocessor(CodeBlockPostProcessor.class);
         asciidoctor.javaExtensionRegistry().postprocessor(NoticeBlockPostProcessor.class);
         asciidoctor.javaExtensionRegistry().postprocessor(TOCBlockPostProcessor.class);
+
+        return asciidoctor;
     }
 
     public void process(String inputFilename) {
         if (StringUtils.isNotBlank(inputFilename)) {
             read(inputFilename).ifPresent(d ->
-                convert(d).ifPresent(cd -> publishOrPrint(d, cd))
-            );
+                convert(d).ifPresent(cd ->
+                    publishOrPrint(d, cd)));
         }
     }
-
     public Optional<Document> read(String inputFilename) {
         List<String> lines = null;
         try {
@@ -100,39 +121,23 @@ public class FileProcessor {
         }
         return Optional.of(
             new Document()
-                .space(lines
-                    .stream()
-                    .filter(s -> s.contains(spaceKeyTemplate))
-                    .findFirst()
-                    .orElse("")
-                    .replace(spaceKeyTemplate, "")
-                    .replace("/", "")
-                    .trim()
-                )
-                .title(lines
-                    .stream()
-                    .filter(s -> s.contains(titleTemplate))
-                    .findFirst()
-                    .orElse("")
-                    .replace(titleTemplate, "")
-                    .replace("/", "")
-                    .trim()
-                )
-                .parent(lines
-                    .stream()
-                    .filter(s -> s.contains(parentTemplate))
-                    .findFirst()
-                    .orElse("")
-                    .replace(parentTemplate, "")
-                    .replace("/", "")
-                    .trim()
-                )
+                .space(getDocumentParam(lines, spaceKeyTemplate, commandLineArguments.confluenceSpaceKey()))
+                .title(getDocumentParam(lines, titleTemplate, null))
+                .oldtitle(getDocumentParam(lines, titleOldTemplate, null))
+                .parent(getDocumentParam(lines, parentTemplate, null))
                 .inputFilename(inputFilename)
                 .contents(lines.stream().collect(Collectors.joining("\n")))
+                .tags(
+                    Arrays.asList(getDocumentParam(lines, tagsTemplate, null).split(","))
+                    .stream()
+                    .filter(s -> StringUtils.isNotBlank(s))
+                    .map(s -> s.trim())
+                    .collect(Collectors.toList())
+                )
         );
     }
-
     public Optional<String> convert(Document document) {
+        Asciidoctor asciidoctor = initializeAsciidoctor(document);
         try {
             String result = asciidoctor
             .convertFile(
@@ -146,9 +151,10 @@ public class FileProcessor {
         } catch (Exception e) {
             log.warn("error converting file: {}", e.getMessage());
             return Optional.empty();
+        } finally {
+            asciidoctor.shutdown();
         }
     }
-
     public void publishOrPrint(Document document, String convertedDocument) {
         if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl())) {
             if (!confluence.canPublish()) {
@@ -157,14 +163,13 @@ public class FileProcessor {
                 if (!document.canPublish()) {
                     System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
                 } else {
-                    // publish to confluence
+                    // delete page
                     confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
-                    if (confluence.publishPage(
-                        document.space(),
-                        document.title(),
-                        document.parent(),
-                        convertedDocument
-                    )) {
+                    // delete old page in case of renaming
+                    if (StringUtils.isNotBlank(document.oldtitle()))
+                        confluence.getPageId(document.space(), document.oldtitle()).ifPresent(confluence::deletePage);
+                    // publish to confluence
+                    if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
                         System.out.println(
                             String.format(
                                 "Published document to confluence: %s/display/%s/%s"
@@ -173,6 +178,15 @@ public class FileProcessor {
                                 ,document.title().replaceAll(" ", "+")
                             )
                         );
+                        if (confluence.tagPage(document.space(), document.title(), document.tags())
+                        ) {
+                            System.out.println(
+                                String.format(
+                                    "Labeled document with tags: %s"
+                                    ,document.tags()
+                                )
+                            );
+                        }
                     } else {
                         System.out.println(
                             String.format(
@@ -187,5 +201,19 @@ public class FileProcessor {
             // or print to stdout
             System.out.println(convertedDocument);
         }
+    }
+
+    private String getDocumentParam(List<String> lines, String key, String override) {
+        return (StringUtils.isNotBlank(override))
+            ? override
+            : lines
+            .stream()
+            .filter(s -> s.contains(key))
+            .findFirst()
+            .orElse("")
+            .replace(key, "")
+            .replace("/", "")
+            .trim()
+        ;
     }
 }

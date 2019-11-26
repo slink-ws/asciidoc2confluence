@@ -11,20 +11,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
-public class CodeBlockPreProcessor extends Preprocessor {
+public class ConfluenceLinkMacroPreProcessor extends Preprocessor {
 
-    private static final String CODE_START = "(.*)(\\[source)(.*\\])(.*)";
-    private static final Pattern START_PATTERN = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final String LINK_START = "(.*)(link:)(.*)(\\[)(.*)(\\])(.*)";
+    private static final Pattern START_PATTERN = Pattern.compile(LINK_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
     public void process (Document document, PreprocessorReader reader) {
         List<String> lines = reader.readLines();
         List<String> newLines = new ArrayList<>();
-
         lines.stream().forEach(line -> {
             Matcher m = START_PATTERN.matcher(line);
             if (m.matches()) {
-                newLines.add(line.replace(m.group(2), "[code"));
+                newLines.add(line.replace(m.group(2), "cflink:")/*.replace(m.group(3), m.group(3).replace(" ", "-"))*/);
             } else {
                 newLines.add(line);
             }

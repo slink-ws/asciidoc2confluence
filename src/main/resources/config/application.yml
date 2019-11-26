@@ -7,6 +7,7 @@ asciidoc:
     title: ":DOCUMENT-TITLE:"
     title-old: ":DOCUMENT-TITLE:-OLD"
     parent: ":DOCUMENT-PARENT:"
+    tags: ":DOCUMENT-TAGS:"
 
 server:
   port: 8088
@@ -21,6 +22,6 @@ logging:
   #  file: lic-gen.log
   level:
     root: WARN
-    ws.slink: TRACE
+    ws.slink: WARN
   pattern:
     console: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"

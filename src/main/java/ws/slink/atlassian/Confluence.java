@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,19 +63,38 @@ public class Confluence {
             .set("title", title)
             .set("space", new FluentJson().set("key", space))
             .set("body", new FluentJson()
-                         .set("storage", new FluentJson()
-                                         .set("value", content)
-                                         .set("representation", "storage")
-                         )
+                 .set("storage", new FluentJson()
+                     .set("value", content)
+                     .set("representation", "storage")
+                 )
             );
+
         if (StringUtils.isNotBlank(parent))
             getPageId(space, parent).ifPresent(parentId -> {
                 List<JSONObject> list = new ArrayList<>();
                 list.add((JSONObject) new FluentJson().set("id", Long.valueOf(parentId)).get());
                 fj.set("ancestors", list);
             });
-            log.trace("DATA: {}", fj.toString());
-            return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent();
+
+        log.trace("DATA: {}", fj.toString());
+        return exchange(url, HttpMethod.POST, prepare(fj.toString()), "publishing page #" + title).isPresent();
+    }
+    public boolean tagPage(String space, String title, List<String> tags) {
+
+        if (null == tags || tags.isEmpty() || tags.size() < 1)
+            return false;
+
+        Long pageId = Long.valueOf(getPageId(space, title).orElse("-1"));
+        if (pageId < 0)
+            return false;
+
+        String url = String.format("%s/rest/api/content/%d/label", baseUrl(), pageId);
+        JSONArray labels = new JSONArray();
+        tags.stream()
+            .map(tag -> (JSONObject)new FluentJson().set("name", tag).set("prefix", "global").get())
+            .forEach(labels::add);
+
+        return exchange(url, HttpMethod.POST, prepare(labels.toString()), "tagging page #" + title).isPresent();
     }
 
     public boolean canPublish() {

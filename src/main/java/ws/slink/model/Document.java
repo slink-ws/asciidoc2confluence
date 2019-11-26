@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Accessors(fluent = true)
@@ -12,9 +14,11 @@ public class Document {
 
     private String inputFilename;
     private String title;
+    private String oldtitle;
     private String space;
     private String parent;
     private String contents;
+    private List<String> tags;
 
     @Override
     public String toString() {
