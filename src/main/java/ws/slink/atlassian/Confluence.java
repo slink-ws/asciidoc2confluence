@@ -91,7 +91,7 @@ public class Confluence {
         String url = String.format("%s/rest/api/content/%d/label", baseUrl(), pageId);
         JSONArray labels = new JSONArray();
         tags.stream()
-            .map(tag -> (JSONObject)new FluentJson().set("name", tag).set("prefix", "global").get())
+            .map(tag -> (JSONObject)new FluentJson().set("name", tag.replaceAll(" ", "_")).set("prefix", "global").get())
             .forEach(labels::add);
 
         return exchange(url, HttpMethod.POST, prepare(labels.toString()), "tagging page #" + title).isPresent();
