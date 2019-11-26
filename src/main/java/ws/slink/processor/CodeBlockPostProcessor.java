@@ -12,10 +12,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CodeBlockPostProcessor extends Postprocessor {
 
-    private static final String CODE_START = "(.*)(<pre>)([$]+)([A-Za-z]+)([$]+)(.*)";
-    private static final String CODE_END = "([^$]*)([$]+)(</pre>)(.*)";
-    private static final Pattern START_PATTERN = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-    private static final Pattern END_PATTERN   = Pattern.compile(CODE_END, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final String  CODE_START      = "(.*)(<pre>)([$]+)([A-Za-z]+)([$]+)(.*)";
+    private static final String  CODE_END        = "([^$]*)([$]+)(</pre>)(.*)";
+    private static final String  CODE_ONELINE    = "(.*)(<pre>)([$]+)([A-Za-z]+)([$]+)(.*)([$]+)(</pre>)(.*)";
+    private static final Pattern START_PATTERN   = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final Pattern END_PATTERN     = Pattern.compile(CODE_END, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final Pattern ONELINE_PATTERN = Pattern.compile(CODE_ONELINE, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
     public String process(Document document, String convertedDocument) {
@@ -25,12 +27,19 @@ public class CodeBlockPostProcessor extends Postprocessor {
     }
 
     private String processString(String string) {
-        Matcher matcher = START_PATTERN.matcher(string);
+
+        Matcher matcher = ONELINE_PATTERN.matcher(string);
+        if (matcher.matches())
+            return matcher.group(1) + codeOpenElement(matcher.group(4)) + matcher.group(6) + codeCloseElement() + matcher.group(9);
+
+        matcher = START_PATTERN.matcher(string);
         if (matcher.matches())
             return matcher.group(1) + codeOpenElement(matcher.group(4)) + matcher.group(6);
+
         matcher = END_PATTERN.matcher(string);
         if (matcher.matches())
             return string.replace(matcher.group(2) + matcher.group(3), "\n") + codeCloseElement();
+
         return string;
     }
 
