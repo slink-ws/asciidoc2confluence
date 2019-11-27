@@ -34,6 +34,17 @@ Also confluence server credentials should be provisioned to program:
 If confluence credentials are not passed to program, converted document(s) will be printed to STDOUT.
 
 
+## Cleaning up Confluence space(s)
+You can clean up _space_ in confluence before publishing pages. For this use `--clean=SPACE1,SPACE2` command-line 
+argument with comma-separated list of space keys to be cleaned up. If this argument is passed to program all the 
+_unprotected_ pages in mentioned spaces will be removed before publishing stage. Only pages tagged with _protected_ 
+label(s) will be kept. Protected labels are set in configuration file and can be overridden with environment variable 
+`confluence.protected.label`. Like this:
+
+```
+export confluence.protected.label=protected_label_1,protected_label_2
+``` 
+
 ## Converting documents
 The data for program can be provisioned with two ways:
 - single file (`--input=<fileName>`)
@@ -96,13 +107,10 @@ To insert TOC macro in resulting confluence page use following syntax:
 ... the rest of document ...
 ```
 
-## Cleaning up Confluence space(s)
-You can clean up _space_ in confluence before publishing pages. For this use `--clean=SPACE1,SPACE2` command-line 
-argument with comma-separated list of space keys to be cleaned up. If this argument is passed to program all the 
-_unprotected_ pages in mentioned spaces will be removed before publishing stage. Only pages tagged with _protected_ 
-label(s) will be kept. Protected labels are set in configuration file and can be overridden with environment variable 
-`confluence.protected.label`. Like this:
+## Page tree
+You can insert confluence page tree macro into source asciidoc files to be rendered to confluence 
+[page tree](https://confluence.atlassian.com/display/CONF55/Page+Tree+Macro). Use following syntax:
 
 ```
-export confluence.protected.label=protected_label_1,protected_label_2
-``` 
+// pagetree::Root+page+name[]
+```
