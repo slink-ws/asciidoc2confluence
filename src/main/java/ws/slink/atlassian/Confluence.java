@@ -132,8 +132,8 @@ public class Confluence {
     }
     public List<Page> getPages(String space) {
         int index = 0;
-        int limit = 5;
-        List<Page> result = new ArrayList<>(25);
+        int limit = 25;
+        List<Page> result = new ArrayList<>(limit * 2);
         while(true) {
             List<Page> batch = getPages(space, index, limit);
             if (batch.isEmpty())
