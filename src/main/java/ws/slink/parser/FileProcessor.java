@@ -85,12 +85,14 @@ public class FileProcessor {
         // register preprocessors
         asciidoctor.javaExtensionRegistry().preprocessor(CodeBlockPreProcessor.class);
         asciidoctor.javaExtensionRegistry().preprocessor(ConfluenceLinkMacroPreProcessor.class);
+        asciidoctor.javaExtensionRegistry().preprocessor(TreeMacroPreProcessor.class);
 
         // register block processors
         asciidoctor.javaExtensionRegistry().block(CodeBlockProcessor.class);
 
         // register (inline) macro processors
         asciidoctor.javaExtensionRegistry().inlineMacro(new ConfluenceLinkInlineMacroProcessor(document.space()));
+        asciidoctor.javaExtensionRegistry().blockMacro(TreeMacroProcessor.class);
 
         // register postprocessors
         asciidoctor.javaExtensionRegistry().postprocessor(CodeBlockPostProcessor.class);
