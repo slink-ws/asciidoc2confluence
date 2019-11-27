@@ -21,7 +21,6 @@ public class TreeMacroPreProcessor extends Preprocessor {
         lines.stream().forEach(line -> {
             Matcher m = TREE_PATTERN.matcher(line);
             if (m.matches()) {
-                System.err.println(line);
                 newLines.add(line.replace(m.group(1)+m.group(2), ""));
             } else {
                 newLines.add(line);

@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
+import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.parser.DirectoryProcessor;
 import ws.slink.parser.FileProcessor;
@@ -23,6 +24,7 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
     private final @NonNull CommandLineArguments commandLineArguments;
     private final @NonNull DirectoryProcessor directoryProcessor;
     private final @NonNull FileProcessor fileProcessor;
+    private final @NonNull Confluence confluence;
 
     private ConfigurableApplicationContext applicationContext;
 
@@ -33,10 +35,20 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
 
     @Override
     public void run(String... args) {
+
+        // cleanup all the needed spaces
+        if(!commandLineArguments.cleanupSpaces().isEmpty()) {
+            commandLineArguments.cleanupSpaces().stream().forEach(confluence::cleanSpace);
+            System.out.println("Cleaned up following space(s): " + commandLineArguments.cleanupSpaces());
+        }
+
+        // process documentation sources
         if (StringUtils.isNotBlank(commandLineArguments.directoryPath()))
             directoryProcessor.process(commandLineArguments.directoryPath());
         else if (StringUtils.isNotBlank(commandLineArguments.inputFilename()))
             fileProcessor.process(commandLineArguments.inputFilename());
+
+        // close up
         applicationContext.close();
         System.exit(0);
     }

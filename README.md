@@ -95,3 +95,14 @@ To insert TOC macro in resulting confluence page use following syntax:
 
 ... the rest of document ...
 ```
+
+## Cleaning up Confluence space(s)
+You can clean up _space_ in confluence before publishing pages. For this use `--clean=SPACE1,SPACE2` command-line 
+argument with comma-separated list of space keys to be cleaned up. If this argument is passed to program all the 
+_unprotected_ pages in mentioned spaces will be removed before publishing stage. Only pages tagged with _protected_ 
+label(s) will be kept. Protected labels are set in configuration file and can be overridden with environment variable 
+`confluence.protected.label`. Like this:
+
+```
+export confluence.protected.label=protected_label_1,protected_label_2
+``` 

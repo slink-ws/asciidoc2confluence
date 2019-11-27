@@ -9,6 +9,10 @@ asciidoc:
     parent: ":DOCUMENT-PARENT:"
     tags: ":DOCUMENT-TAGS:"
 
+confluence:
+  protected:
+    label: _dx_kb_keep
+
 server:
   port: 8088
 

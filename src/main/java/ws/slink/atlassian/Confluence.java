@@ -8,12 +8,14 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import ws.slink.config.CommandLineArguments;
+import ws.slink.model.Page;
 import ws.slink.tools.FluentJson;
 
 import java.nio.charset.Charset;
@@ -21,11 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor (onConstructor = @__(@Autowired))
 public class Confluence {
+
+    @Value("${confluence.protected.label:}")
+    private List<String> protectedLabels;
 
     private final CommandLineArguments commandLineArguments;
 
@@ -116,6 +122,64 @@ public class Confluence {
             prepare(labels.toString()),
             new StringBuilder().append("tagging page #").append(title).toString()
         ).isPresent();
+    }
+
+    public void cleanSpace(String space) {
+        getPages(space)
+            .stream()
+            .filter(p -> p.labels().stream().noneMatch(protectedLabels::contains))
+            .forEach(p -> deletePage(p.id()));
+    }
+    public List<Page> getPages(String space) {
+        int index = 0;
+        int limit = 5;
+        List<Page> result = new ArrayList<>(25);
+        while(true) {
+            List<Page> batch = getPages(space, index, limit);
+            if (batch.isEmpty())
+                break;
+            result.addAll(batch);
+            index += limit;
+        }
+        return result;
+    }
+    private List<Page> getPages(String space, int start, int limit) {
+        String url = String.format("%s/rest/api/content?type=page&spaceKey=%s&expand=metadata.labels&start=%d&limit=%d",
+                                   baseUrl(),
+                                   space,
+                                   start,
+                                   limit);
+        List<Page> result = new ArrayList<>();
+        exchange(
+            url,
+            HttpMethod.GET,
+            prepare(null),
+            new StringBuilder()
+                .append("requesting pages from space ")
+                .append(space)
+                .toString()
+        )
+        .ifPresent(response -> {
+            try {
+                FluentJson fj = new FluentJson(response.getBody());
+                fj.get("results")
+                  .stream()
+                  .forEach(page -> result.add(new Page()
+                      .id(page.getString("id").replaceAll("\"", ""))
+                      .title(page.getString("title").replaceAll("\"", ""))
+                      .labels(
+                          page.get("metadata").get("labels").get("results")
+                          .stream()
+                          .map(lr -> lr.getString("name").replaceAll("\"", ""))
+                          .collect(Collectors.toList())
+                      )
+                  ));
+            } catch (ParseException e) {
+                log.warn("error parsing page list JSON");
+                e.printStackTrace();
+            }
+        });
+        return result;
     }
 
     public boolean canPublish() {

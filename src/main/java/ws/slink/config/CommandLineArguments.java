@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Slf4j
 @Component
 @Getter
@@ -21,13 +25,16 @@ public class CommandLineArguments {
     private String confluenceUser      = null;
     private String confluencePassword  = null;
     private String confluenceSpaceKey  = null;
+    private List<String> cleanupSpaces = new ArrayList<>();
 
     @Autowired
     public CommandLineArguments(ApplicationArguments args) {
         if (args.getOptionNames().isEmpty()
          || args.containsOption("h")
          || args.containsOption("help")
-         || (!args.containsOption("input") && (!args.containsOption("dir")))
+         || (!args.containsOption("input")
+          && !args.containsOption("dir")
+          && !args.containsOption("clean"))
         ) {
             printUsage();
         } else {
@@ -36,6 +43,9 @@ public class CommandLineArguments {
             }
             if (args.containsOption("dir")) {
                 this.directoryPath = args.getOptionValues("dir").get(0);
+            }
+            if (args.containsOption("clean")) {
+                this.cleanupSpaces.addAll(Arrays.asList(args.getOptionValues("clean").get(0).split(",")));
             }
             if (args.containsOption("tags")) {
                 this.tagsFilename = args.getOptionValues("tags").get(0);
@@ -62,6 +72,7 @@ public class CommandLineArguments {
         System.out.println("  java -jar asciidoc2confluence.jar {--input=<asciidoc filename> | --dir=<path/to/directory>} [--url=<confluence url> --user=<login> --pass=<password>] [--space=<confluence space key>]");
         System.out.println("\t--input\t\tInput AsciiDoc filename to generate documentation from");
         System.out.println("\t--dir\t\tDirectory to process asciidoc files recursively");
+        System.out.println("\t--clean\t\tSpace keys list for spaces to be cleaned up (remove all pages, besides pages tagged with protected labels)");
         System.out.println("\t--url\t\tConfluence server base URL (e.g. http://localhost:8090)");
         System.out.println("\t--user\t\tConfluence user with publish rights");
         System.out.println("\t--pass\t\tConfluence user password");
