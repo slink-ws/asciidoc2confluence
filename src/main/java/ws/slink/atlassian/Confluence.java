@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -67,11 +69,22 @@ public class Confluence {
         );
         return result.get();
     }
-    public void deletePage(String pageId) {
+    public int deletePage(String pageId, String title) {
         String url = String.format("%s/rest/api/content/%s", baseUrl(), pageId);
-        String errorMessage = new StringBuilder().append("removing page #").append(pageId).toString();
-        exchange(url, HttpMethod.DELETE, prepare(null), errorMessage);
+        String errorMessage = new StringBuilder()
+            .append("removing page #")
+            .append(pageId)
+            .append(" (")
+            .append(title)
+            .append(")")
+            .toString();
+        AtomicInteger r1 = new AtomicInteger(0);
+        exchange(url, HttpMethod.DELETE, prepare(null), errorMessage).ifPresent(re -> {
+            if (!re.getStatusCode().isError())
+                r1.set(1);
+        });
         exchange(url.concat("?status=trashed"), HttpMethod.DELETE, prepare(null), errorMessage);
+        return r1.get();
     }
     public boolean publishPage(String space, String title, String parent, String content) {
         String url = String.format("%s/rest/api/content", baseUrl());
@@ -124,11 +137,23 @@ public class Confluence {
         ).isPresent();
     }
 
-    public void cleanSpace(String space) {
-        getPages(space)
-            .stream()
-            .filter(p -> p.labels().stream().noneMatch(protectedLabels::contains))
-            .forEach(p -> deletePage(p.id()));
+    public int cleanSpace(String space) {
+        AtomicInteger result = new AtomicInteger(0);
+        if (commandLineArguments.forcedCleanup()) {
+            getPages(space)
+                .stream()
+                .forEach(p -> result.addAndGet(deletePage(p.id(), p.title())));
+        } else {
+            getPages(space)
+                .stream()
+                .filter(p -> p.labels().stream().anyMatch(protectedLabels::contains))
+                .forEach(p -> System.out.println("Skipping removal of '" + p.title() + "' (" + p.id() + ")"));
+            getPages(space)
+                .stream()
+                .filter(p -> p.labels().stream().noneMatch(protectedLabels::contains))
+                .forEach(p -> result.addAndGet(deletePage(p.id(), p.title())));
+        }
+        return result.get();
     }
     public List<Page> getPages(String space) {
         int index = 0;

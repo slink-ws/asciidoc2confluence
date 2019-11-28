@@ -159,10 +159,10 @@ public class FileProcessor {
                     System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
                 } else {
                     // delete page
-                    confluence.getPageId(document.space(), document.title()).ifPresent(confluence::deletePage);
+                    confluence.getPageId(document.space(), document.title()).ifPresent(id -> confluence.deletePage(id, document.title()));
                     // delete old page in case of renaming
                     if (StringUtils.isNotBlank(document.oldTitle()))
-                        confluence.getPageId(document.space(), document.oldTitle()).ifPresent(confluence::deletePage);
+                        confluence.getPageId(document.space(), document.oldTitle()).ifPresent(id -> confluence.deletePage(id, document.oldTitle()));
                     // publish to confluence
                     if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
                         System.out.println(
@@ -189,6 +189,8 @@ public class FileProcessor {
                                 ,document.title()
                             )
                         );
+                        if (commandLineArguments.debugOnError())
+                            System.out.println(convertedDocument);
                     }
                 }
             }
