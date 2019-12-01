@@ -11,7 +11,7 @@ asciidoc:
 
 confluence:
   protected:
-    label: _dx_kb_keep
+    label: ${PROTECTED_LABELS:_dx_kb_keep}
 
 server:
   port: 8088
