@@ -37,11 +37,18 @@ public class CodeBlockProcessor extends BlockProcessor {
                 .append(MARKER)
                 .append(language)
                 .append(MARKER)
-                .append(content)
+                .append(unescapeSymbols(content))
                 .append(MARKER)
                 .toString()
             ,attributes);
         return block;
+    }
+
+    private String unescapeSymbols(String input) {
+        return input
+            .replaceAll("&lt;", "<")
+            .replaceAll("&gt;", ">")
+            .replaceAll("&amp;", "&");
     }
 
 }

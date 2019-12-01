@@ -30,15 +30,15 @@ public class CodeBlockPostProcessor extends Postprocessor {
 
         Matcher matcher = ONELINE_PATTERN.matcher(string);
         if (matcher.matches())
-            return matcher.group(1) + codeOpenElement(matcher.group(4)) + unescapeSymbols(matcher.group(6)) + codeCloseElement() + matcher.group(9);
+            return matcher.group(1) + codeOpenElement(matcher.group(4)) + matcher.group(6) + codeCloseElement() + matcher.group(9);
 
         matcher = START_PATTERN.matcher(string);
         if (matcher.matches())
-            return matcher.group(1) + codeOpenElement(matcher.group(4)) + unescapeSymbols(matcher.group(6));
+            return matcher.group(1) + codeOpenElement(matcher.group(4)) + matcher.group(6);
 
         matcher = END_PATTERN.matcher(string);
         if (matcher.matches())
-            return unescapeSymbols(string.replace(matcher.group(2) + matcher.group(3), "")) + codeCloseElement();
+            return string.replace(matcher.group(2) + matcher.group(3), "") + codeCloseElement();
 
         return string;
     }
@@ -71,11 +71,11 @@ public class CodeBlockPostProcessor extends Postprocessor {
         ;
     }
 
-    private String unescapeSymbols(String input) {
-        return input
-            .replaceAll("&lt;", "<")
-            .replaceAll("&gt;", ">")
-            .replaceAll("&amp;", "&");
-    }
+//    private String unescapeSymbols(String input) {
+//        return input
+//            .replaceAll("&lt;", "<")
+//            .replaceAll("&gt;", ">")
+//            .replaceAll("&amp;", "&");
+//    }
 
 }
