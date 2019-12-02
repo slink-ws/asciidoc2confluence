@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -13,8 +14,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
+import ws.slink.model.ProcessingResult;
 import ws.slink.parser.DirectoryProcessor;
 import ws.slink.parser.FileProcessor;
+
+import java.time.Instant;
 
 @Slf4j
 @Component
@@ -36,6 +40,8 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
     @Override
     public void run(String... args) {
 
+        long timeA = Instant.now().toEpochMilli();
+
         // cleanup all the needed spaces
         if(!commandLineArguments.cleanupSpaces().isEmpty()) {
             System.out.println("Cleaning up following space(s): " + commandLineArguments.cleanupSpaces());
@@ -44,11 +50,23 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
                 .forEach(s -> System.out.println("Removed " + confluence.cleanSpace(s) + " page(s) from " + s));
         }
 
+        long timeB = Instant.now().toEpochMilli();
+
         // process documentation sources
+        ProcessingResult result = new ProcessingResult();
         if (StringUtils.isNotBlank(commandLineArguments.directoryPath()))
-            directoryProcessor.process(commandLineArguments.directoryPath());
+            result.merge(directoryProcessor.process(commandLineArguments.directoryPath()));
         else if (StringUtils.isNotBlank(commandLineArguments.inputFilename()))
-            fileProcessor.process(commandLineArguments.inputFilename());
+            result.merge(fileProcessor.process(commandLineArguments.inputFilename()));
+
+        long timeC = Instant.now().toEpochMilli();
+
+        System.out.println("-------------------------------------------------------------");
+        System.out.println("clean up time         : " + DurationFormatUtils.formatDurationHMS( timeB - timeA));
+        System.out.println("publishing time       : " + DurationFormatUtils.formatDurationHMS( timeC - timeB));
+        System.out.println("successfully processed: " + result.successful().get());
+        System.out.println("processing failures   : " + result.failed().get());
+
 
         // close up
         applicationContext.close();

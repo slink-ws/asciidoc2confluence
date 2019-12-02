@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import ws.slink.atlassian.Confluence;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
+import ws.slink.model.ProcessingResult;
 import ws.slink.processor.*;
 
 import javax.annotation.PostConstruct;
@@ -103,9 +104,11 @@ public class FileProcessor {
         return asciidoctor;
     }
 
-    public void process(String inputFilename) {
+    public ProcessingResult process(String inputFilename) {
+        ProcessingResult result = new ProcessingResult();
         if (StringUtils.isNotBlank(inputFilename))
-            read(inputFilename).ifPresent(d -> convert(d).ifPresent(cd -> publishOrPrint(d, cd)));
+            read(inputFilename).ifPresent(d -> convert(d).ifPresent(cd -> result.merge(publishOrPrint(d, cd))));
+        return result;
     }
     public Optional<Document> read(String inputFilename) {
         List<String> lines;
@@ -159,13 +162,15 @@ public class FileProcessor {
             asciidoctor.shutdown();
         }
     }
-    public void publishOrPrint(Document document, String convertedDocument) {
+    public ProcessingResult publishOrPrint(Document document, String convertedDocument) {
         if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl())) {
             if (!confluence.canPublish()) {
                 System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
+                return ProcessingResult.FAILURE;
             } else {
                 if (!document.canPublish()) {
                     System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
+                    return ProcessingResult.FAILURE;
                 } else {
                     // delete page
                     confluence.getPageId(document.space(), document.title()).ifPresent(id -> confluence.deletePage(id, document.title()));
@@ -191,6 +196,7 @@ public class FileProcessor {
                                 )
                             );
                         }
+                        return ProcessingResult.SUCCESS;
                     } else {
                         System.out.println(
                             String.format(
@@ -200,12 +206,14 @@ public class FileProcessor {
                         );
                         if (commandLineArguments.debugOnError())
                             System.out.println(convertedDocument);
+                        return ProcessingResult.FAILURE;
                     }
                 }
             }
         } else {
             // or print to stdout
             System.out.println(convertedDocument);
+            return ProcessingResult.SUCCESS;
         }
     }
 
