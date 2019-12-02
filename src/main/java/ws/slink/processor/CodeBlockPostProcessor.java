@@ -71,11 +71,4 @@ public class CodeBlockPostProcessor extends Postprocessor {
         ;
     }
 
-//    private String unescapeSymbols(String input) {
-//        return input
-//            .replaceAll("&lt;", "<")
-//            .replaceAll("&gt;", ">")
-//            .replaceAll("&amp;", "&");
-//    }
-
 }
