@@ -16,6 +16,7 @@ import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
 import ws.slink.model.ProcessingResult;
 import ws.slink.processor.*;
+import ws.slink.service.TrackingService;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -49,6 +50,8 @@ public class FileProcessor {
 
     private final CommandLineArguments commandLineArguments;
     private final Confluence confluence;
+    private final TrackingService trackingService;
+
 
     @SuppressWarnings("unchecked")
     private void disableAccessWarnings() {
@@ -133,6 +136,10 @@ public class FileProcessor {
                     .map(s -> s.trim())
                     .collect(Collectors.toList())
         );
+
+        if (trackingService.contains(document.title()))
+            log.warn("document '{}' already processed in this batch; suspected document title repeating", document.title());
+        trackingService.add(document.title());
 
         if (!FilenameUtils.getBaseName(inputFilename)
             .replaceAll(" ", "_")

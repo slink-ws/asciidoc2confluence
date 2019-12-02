@@ -17,6 +17,7 @@ import ws.slink.config.CommandLineArguments;
 import ws.slink.model.ProcessingResult;
 import ws.slink.parser.DirectoryProcessor;
 import ws.slink.parser.FileProcessor;
+import ws.slink.service.TrackingService;
 
 import java.time.Instant;
 
@@ -29,6 +30,7 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
     private final @NonNull DirectoryProcessor directoryProcessor;
     private final @NonNull FileProcessor fileProcessor;
     private final @NonNull Confluence confluence;
+    private final @NonNull TrackingService trackingService;
 
     private ConfigurableApplicationContext applicationContext;
 
@@ -62,11 +64,19 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
         long timeC = Instant.now().toEpochMilli();
 
         System.out.println("-------------------------------------------------------------");
+        System.out.println("total time taken      : " + DurationFormatUtils.formatDurationHMS( timeC - timeA));
         System.out.println("clean up time         : " + DurationFormatUtils.formatDurationHMS( timeB - timeA));
         System.out.println("publishing time       : " + DurationFormatUtils.formatDurationHMS( timeC - timeB));
         System.out.println("successfully processed: " + result.successful().get());
         System.out.println("processing failures   : " + result.failed().get());
+        System.out.println("duplicate titles      : ");
 
+        trackingService
+            .get()
+            .entrySet()
+            .stream()
+            .map(e -> "                        " + e.getKey() + " x " + e.getValue())
+            .forEach(System.out::println);
 
         // close up
         applicationContext.close();

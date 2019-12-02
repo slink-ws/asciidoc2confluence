@@ -28,8 +28,8 @@ public class DirectoryProcessor {
     }
 
     private ProcessingResult processAllFiles(String directoryPath) {
-        ProcessingResult result = new ProcessingResult();
         try {
+            ProcessingResult result = new ProcessingResult();
             Files.list(Paths.get(directoryPath))
                 .map(Path::toFile)
                 .filter(File::isFile)
@@ -37,17 +37,18 @@ public class DirectoryProcessor {
                 .map(f -> f.getAbsolutePath())
                 .parallel()
                 .forEach(f -> result.merge(fileProcessor.process(f)));
+            return result;
         } catch (IOException e) {
             log.error("error processing files in {}: {}", directoryPath, e.getMessage());
             if (log.isTraceEnabled())
                 e.printStackTrace();
+            return ProcessingResult.FAILURE;
         }
-        return result;
     }
 
     private ProcessingResult processAllDirectories(String directoryPath) {
-        ProcessingResult result = new ProcessingResult();
         try {
+            ProcessingResult result = new ProcessingResult();
             Files.list(Paths.get(directoryPath))
                 .map(Path::toFile)
                 .filter(f -> f.isDirectory())
@@ -55,12 +56,13 @@ public class DirectoryProcessor {
                 .map(Path::toString)
                 .parallel()
                 .forEach(d -> result.merge(process(d)));
+            return result;
         } catch (IOException e) {
             log.error("error processing directory {}: {}", directoryPath, e.getMessage());
             if (log.isTraceEnabled())
                 e.printStackTrace();
+            return ProcessingResult.FAILURE;
         }
-        return result;
     }
 
 }
