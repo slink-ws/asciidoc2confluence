@@ -3,6 +3,7 @@ package ws.slink.parser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
@@ -114,7 +115,7 @@ public class FileProcessor {
             log.error("error reading file: {}", e.getMessage());
             return Optional.empty();
         }
-        return Optional.of(
+        Document document =
             new Document()
                 .space(getDocumentParam(lines, spaceKeyTemplate, commandLineArguments.confluenceSpaceKey()))
                 .title(getDocumentParam(lines, titleTemplate, null))
@@ -128,8 +129,16 @@ public class FileProcessor {
                     .filter(s -> StringUtils.isNotBlank(s))
                     .map(s -> s.trim())
                     .collect(Collectors.toList())
-                )
         );
+
+        if (!FilenameUtils.getBaseName(inputFilename)
+            .replaceAll(" ", "_")
+            .equalsIgnoreCase(document.title().replaceAll(" ", "_")))
+            log.warn("document title does not match with file name: '{}' - '{}'",
+                document.title(),
+                FilenameUtils.getName(inputFilename));
+
+        return Optional.of(document);
     }
     public Optional<String> convert(Document document) {
         Asciidoctor asciidoctor = initializeAsciidoctor(document);
