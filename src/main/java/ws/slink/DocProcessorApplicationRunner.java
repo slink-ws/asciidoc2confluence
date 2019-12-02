@@ -64,13 +64,12 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
         long timeC = Instant.now().toEpochMilli();
 
         System.out.println("-------------------------------------------------------------");
-        System.out.println("total time taken      : " + DurationFormatUtils.formatDurationHMS( timeC - timeA));
-        System.out.println("clean up time         : " + DurationFormatUtils.formatDurationHMS( timeB - timeA));
-        System.out.println("publishing time       : " + DurationFormatUtils.formatDurationHMS( timeC - timeB));
+        System.out.println("total time taken      : " + DurationFormatUtils.formatDuration( timeC - timeA, "HH:mm:ss"));
+        System.out.println("clean up time         : " + DurationFormatUtils.formatDuration( timeB - timeA, "HH:mm:ss"));
+        System.out.println("publishing time       : " + DurationFormatUtils.formatDuration( timeC - timeB, "HH:mm:ss"));
         System.out.println("successfully processed: " + result.successful().get());
         System.out.println("processing failures   : " + result.failed().get());
         System.out.println("duplicate titles      : ");
-
         trackingService
             .get()
             .entrySet()
