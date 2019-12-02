@@ -147,7 +147,7 @@ public class Confluence {
             getPages(space)
                 .stream()
                 .filter(p -> p.labels().stream().anyMatch(protectedLabels::contains))
-                .forEach(p -> System.out.println("Skipping removal of '" + p.title() + "' (" + p.id() + ")"));
+                .forEach(p -> log.info("Skipping removal of '" + p.title() + "' (" + p.id() + ")"));
             getPages(space)
                 .stream()
                 .filter(p -> p.labels().stream().noneMatch(protectedLabels::contains))

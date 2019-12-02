@@ -186,7 +186,7 @@ public class FileProcessor {
                         confluence.getPageId(document.space(), document.oldTitle()).ifPresent(id -> confluence.deletePage(id, document.oldTitle()));
                     // publish to confluence
                     if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
-                        System.out.println(
+                        log.info(
                             String.format(
                                 "Published document to confluence: %s/display/%s/%s"
                                 ,commandLineArguments.confluenceUrl()
@@ -196,7 +196,7 @@ public class FileProcessor {
                         );
                         if (confluence.tagPage(document.space(), document.title(), document.tags())
                         ) {
-                            System.out.println(
+                            log.info(
                                 String.format(
                                     "Labeled document with tags: %s"
                                     ,document.tags()
@@ -205,7 +205,7 @@ public class FileProcessor {
                         }
                         return ProcessingResult.SUCCESS;
                     } else {
-                        System.out.println(
+                        log.info(
                             String.format(
                                 "Could not publish document '%s' to confluence server"
                                 ,document.title()

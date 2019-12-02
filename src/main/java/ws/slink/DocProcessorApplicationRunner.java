@@ -46,10 +46,10 @@ public class DocProcessorApplicationRunner implements CommandLineRunner, Applica
 
         // cleanup all the needed spaces
         if(!commandLineArguments.cleanupSpaces().isEmpty()) {
-            System.out.println("Cleaning up following space(s): " + commandLineArguments.cleanupSpaces());
+            log.info("Cleaning up following space(s): " + commandLineArguments.cleanupSpaces());
             commandLineArguments.cleanupSpaces()
                 .stream()
-                .forEach(s -> System.out.println("Removed " + confluence.cleanSpace(s) + " page(s) from " + s));
+                .forEach(s -> log.info("Removed " + confluence.cleanSpace(s) + " page(s) from " + s));
         }
 
         long timeB = Instant.now().toEpochMilli();

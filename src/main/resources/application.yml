@@ -23,9 +23,6 @@ spring:
     active: main
 
 logging:
-  #  file: lic-gen.log
   level:
     root: WARN
-    ws.slink: WARN
-  pattern:
-    console: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
+    ws.slink: INFO
