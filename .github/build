@@ -1,0 +1,5 @@
+#!/usr/bin//env bash
+
+TAG=$(echo ${GITHUB_REF:10})
+
+echo "TAG IS: $TAG"
