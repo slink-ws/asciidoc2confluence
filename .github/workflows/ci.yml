@@ -10,19 +10,17 @@ jobs:
     name: release
     runs-on: ubuntu-latest
     steps:
-#      - name: Get current tag
-#        id: tag
-#        run: ::set-output name=tag::$(echo ${GITHUB_REF:10})
       - uses: actions/checkout@master
       - name: build
         uses: mvkvl/github-action-build@master
         with:
           builder: .github/build
-#      - name: publish
-#        uses: mvkvl/github-action-publish-binaries@master
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
+      - name: publish
+        uses: mvkvl/github-action-publish-binaries@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: '*.jar'
 #          args: '*-${{ steps.tag.outputs.tag }}'
 
 #  test-action:
