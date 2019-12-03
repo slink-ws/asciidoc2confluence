@@ -1,6 +1,6 @@
 #!/usr/bin//env bash
 
-TAG=$(echo ${GITHUB_REF:10})
+#TAG=$(echo ${GITHUB_REF:10})
+JARFILE="asciidoc2confluence"
 
-echo "TAG IS: $TAG"
-mvn clean package
+./mvnw clean package && cd target && tar cvfz ${JARFILE}.tar.gz ${JARFILE}.jar
