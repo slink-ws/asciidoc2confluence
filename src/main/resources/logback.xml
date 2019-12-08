@@ -10,16 +10,16 @@
         </encoder>
     </appender>
 
-    <appender name="file" class="ch.qos.logback.core.FileAppender">
-        <file> asciidoc2confluence-${byDay}.log </file>
-        <append>false</append>
-        <encoder>
-            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M - %msg%n</pattern>
-        </encoder>
-    </appender>
+<!--    <appender name="file" class="ch.qos.logback.core.FileAppender">-->
+<!--        <file> asciidoc2confluence-${byDay}.log </file>-->
+<!--        <append>false</append>-->
+<!--        <encoder>-->
+<!--            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
 
     <logger name="root" additivity="false">
-<!--        <appender-ref ref="console"/>-->
-        <appender-ref ref="file"/>
+        <appender-ref ref="console"/>
+<!--        <appender-ref ref="file"/>-->
     </logger>
 </configuration>

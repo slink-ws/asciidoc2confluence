@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ws.slink.atlassian.Confluence;
+import ws.slink.config.AppConfig;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
 import ws.slink.model.ProcessingResult;
@@ -48,7 +49,7 @@ public class FileProcessor {
     @Value("${asciidoc.template.tags}")
     private String tagsTemplate;
 
-    private final CommandLineArguments commandLineArguments;
+    private final AppConfig appConfig;
     private final Confluence confluence;
     private final TrackingService trackingService;
 
@@ -123,7 +124,7 @@ public class FileProcessor {
         }
         Document document =
             new Document()
-                .space(getDocumentParam(lines, spaceKeyTemplate, commandLineArguments.confluenceSpaceKey()))
+                .space(getDocumentParam(lines, spaceKeyTemplate, appConfig.getSpace()))
                 .title(getDocumentParam(lines, titleTemplate, null))
                 .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
@@ -170,7 +171,7 @@ public class FileProcessor {
         }
     }
     public ProcessingResult publishOrPrint(Document document, String convertedDocument) {
-        if (StringUtils.isNotBlank(commandLineArguments.confluenceUrl())) {
+        if (StringUtils.isNotBlank(appConfig.getUrl())) {
             if (!confluence.canPublish()) {
                 System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
                 return ProcessingResult.FAILURE;
@@ -189,7 +190,7 @@ public class FileProcessor {
                         log.info(
                             String.format(
                                 "Published document to confluence: %s/display/%s/%s"
-                                ,commandLineArguments.confluenceUrl()
+                                ,appConfig.getUrl()
                                 ,document.space()
                                 ,document.title().replaceAll(" ", "+")
                             )
@@ -211,7 +212,7 @@ public class FileProcessor {
                                 ,document.title()
                             )
                         );
-                        if (commandLineArguments.debugOnError())
+                        if (appConfig.isDebug())
                             System.out.println(convertedDocument);
                         return ProcessingResult.FAILURE;
                     }
