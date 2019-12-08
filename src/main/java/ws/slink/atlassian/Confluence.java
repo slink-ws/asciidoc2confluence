@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import ws.slink.config.AppConfig;
 import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Page;
 import ws.slink.tools.FluentJson;
@@ -35,7 +36,7 @@ public class Confluence {
     @Value("${confluence.protected.label:}")
     private List<String> protectedLabels;
 
-    private final CommandLineArguments commandLineArguments;
+    private final AppConfig appConfig;
 
     public Optional<String> getPageId(String space, String title) {
         String url = String.format("%s/rest/api/content?title=%s&spaceKey=%s&expand=history", baseUrl(), title, space);
@@ -139,7 +140,7 @@ public class Confluence {
 
     public int cleanSpace(String space) {
         AtomicInteger result = new AtomicInteger(0);
-        if (commandLineArguments.forcedCleanup()) {
+        if (appConfig.isForce()) {
             getPages(space)
                 .stream()
                 .forEach(p -> result.addAndGet(deletePage(p.id(), p.title())));
@@ -246,13 +247,13 @@ public class Confluence {
     }
 
     private String baseUrl() {
-        return commandLineArguments.confluenceUrl();
+        return appConfig.getUrl();
     }
     private String user() {
-        return commandLineArguments.confluenceUser();
+        return appConfig.getUser();
     }
     private String password() {
-        return commandLineArguments.confluencePassword();
+        return appConfig.getPass();
     }
 
 }
