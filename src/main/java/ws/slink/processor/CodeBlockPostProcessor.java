@@ -21,26 +21,37 @@ public class CodeBlockPostProcessor extends Postprocessor {
 
     @Override
     public String process(Document document, String convertedDocument) {
+        ThreadLocal<Boolean> inCodeBlock = ThreadLocal.withInitial(() -> false);
         return Arrays.stream(convertedDocument.split("\n"))
-            .map(this::processString)
+            .map(s -> this.processString(s, inCodeBlock))
             .collect(Collectors.joining("\n"));
     }
 
-    private String processString(String string) {
+    private String processString(String string, ThreadLocal<Boolean> inCodeBlock) {
+        Matcher matcherA = ONELINE_PATTERN.matcher(string);
+        Matcher matcherB = START_PATTERN.matcher(string);
+        Matcher matcherC = END_PATTERN.matcher(string);
+        String result;
+        if (matcherA.matches()) {
+            result = unescapeSymbols(matcherA.group(1) + codeOpenElement(matcherA.group(4)) + matcherA.group(6) + codeCloseElement() + matcherA.group(9));
+        } else if (matcherB.matches()) {
+            result = unescapeSymbols(matcherB.group(1) + codeOpenElement(matcherB.group(4)) + matcherB.group(6));
+            inCodeBlock.set(true);
+        } else if (matcherC.matches()) {
+            result = unescapeSymbols(string.replace(matcherC.group(2) + matcherC.group(3), "") + codeCloseElement());
+            inCodeBlock.set(false);
+        } else {
+            result = (inCodeBlock.get()) ? unescapeSymbols(string) : string;
+        }
+//        System.err.println(" > " + result);
+        return result;
+    }
 
-        Matcher matcher = ONELINE_PATTERN.matcher(string);
-        if (matcher.matches())
-            return matcher.group(1) + codeOpenElement(matcher.group(4)) + matcher.group(6) + codeCloseElement() + matcher.group(9);
-
-        matcher = START_PATTERN.matcher(string);
-        if (matcher.matches())
-            return matcher.group(1) + codeOpenElement(matcher.group(4)) + matcher.group(6);
-
-        matcher = END_PATTERN.matcher(string);
-        if (matcher.matches())
-            return string.replace(matcher.group(2) + matcher.group(3), "") + codeCloseElement();
-
-        return string;
+    private String unescapeSymbols(String input) {
+        return input
+            .replaceAll("&lt;", "<")
+            .replaceAll("&gt;", ">")
+            .replaceAll("&amp;", "&");
     }
 
     // see:
