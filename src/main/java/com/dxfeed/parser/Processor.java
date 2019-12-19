@@ -1,4 +1,4 @@
-package ws.slink.parser;
+package com.dxfeed.parser;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -7,10 +7,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ws.slink.atlassian.Confluence;
-import ws.slink.config.AppConfig;
-import ws.slink.model.ProcessingResult;
-import ws.slink.service.TrackingService;
+import com.dxfeed.atlassian.Confluence;
+import com.dxfeed.config.AppConfig;
+import com.dxfeed.model.ProcessingResult;
+import com.dxfeed.service.TrackingService;
 
 import java.time.Instant;
 import java.util.stream.Collectors;

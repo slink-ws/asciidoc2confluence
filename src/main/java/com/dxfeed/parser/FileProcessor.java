@@ -1,4 +1,4 @@
-package ws.slink.parser;
+package com.dxfeed.parser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +11,13 @@ import org.asciidoctor.SafeMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ws.slink.atlassian.Confluence;
-import ws.slink.config.AppConfig;
-import ws.slink.config.CommandLineArguments;
-import ws.slink.model.Document;
-import ws.slink.model.ProcessingResult;
-import ws.slink.processor.*;
-import ws.slink.service.TrackingService;
+import com.dxfeed.atlassian.Confluence;
+import com.dxfeed.config.AppConfig;
+import com.dxfeed.config.CommandLineArguments;
+import com.dxfeed.model.Document;
+import com.dxfeed.model.ProcessingResult;
+import com.dxfeed.processor.*;
+import com.dxfeed.service.TrackingService;
 
 import javax.annotation.PostConstruct;
 import java.io.File;

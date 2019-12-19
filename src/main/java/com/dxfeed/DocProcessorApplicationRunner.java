@@ -1,4 +1,4 @@
-package ws.slink;
+package com.dxfeed;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +11,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
-import ws.slink.config.AppConfig;
-import ws.slink.parser.Processor;
+import com.dxfeed.config.AppConfig;
+import com.dxfeed.parser.Processor;
 
 @Slf4j
 @Component

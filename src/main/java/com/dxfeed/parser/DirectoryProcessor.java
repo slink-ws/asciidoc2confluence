@@ -1,10 +1,10 @@
-package ws.slink.parser;
+package com.dxfeed.parser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ws.slink.model.ProcessingResult;
+import com.dxfeed.model.ProcessingResult;
 
 import java.io.File;
 import java.io.IOException;

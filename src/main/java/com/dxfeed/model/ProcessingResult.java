@@ -1,4 +1,4 @@
-package ws.slink.model;
+package com.dxfeed.model;
 
 import lombok.Getter;
 import lombok.Setter;

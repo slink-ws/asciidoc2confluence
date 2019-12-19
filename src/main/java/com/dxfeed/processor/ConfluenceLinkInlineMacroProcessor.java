@@ -1,4 +1,4 @@
-package ws.slink.processor;
+package com.dxfeed.processor;
 
 import org.asciidoctor.ast.ContentNode;
 import org.asciidoctor.extension.InlineMacroProcessor;
