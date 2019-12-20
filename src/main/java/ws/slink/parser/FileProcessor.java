@@ -46,6 +46,9 @@ public class FileProcessor {
     @Value("${asciidoc.template.parent}")
     private String parentTemplate;
 
+    @Value("${asciidoc.template.hidden}")
+    private String hiddenTemplate;
+
     @Value("${asciidoc.template.tags}")
     private String tagsTemplate;
 
@@ -128,6 +131,7 @@ public class FileProcessor {
                 .title(getDocumentParam(lines, titleTemplate, null))
                 .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
+                .hidden(lines.stream().filter(s -> s.startsWith("//") && s.contains(hiddenTemplate)).findFirst().isPresent())
                 .inputFilename(inputFilename)
                 .contents(lines.stream().collect(Collectors.joining("\n")))
                 .tags(
@@ -185,36 +189,41 @@ public class FileProcessor {
                     // delete old page in case of renaming
                     if (StringUtils.isNotBlank(document.oldTitle()))
                         confluence.getPageId(document.space(), document.oldTitle()).ifPresent(id -> confluence.deletePage(id, document.oldTitle()));
-                    // publish to confluence
-                    if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
-                        log.info(
-                            String.format(
-                                "Published document to confluence: %s/display/%s/%s"
-                                ,appConfig.getUrl()
-                                ,document.space()
-                                ,document.title().replaceAll(" ", "+")
-                            )
-                        );
-                        if (confluence.tagPage(document.space(), document.title(), document.tags())
-                        ) {
+                    // check if document needs to be published
+                    if (!document.hidden()) {
+                        // publish to confluence
+                        if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
                             log.info(
                                 String.format(
-                                    "Labeled document with tags: %s"
-                                    ,document.tags()
+                                    "Published document to confluence: %s/display/%s/%s"
+                                    , appConfig.getUrl()
+                                    , document.space()
+                                    , document.title().replaceAll(" ", "+")
                                 )
                             );
+                            if (confluence.tagPage(document.space(), document.title(), document.tags())) {
+                                log.info(
+                                    String.format(
+                                        "Labeled document with tags: %s"
+                                        , document.tags()
+                                    )
+                                );
+                            }
+                            return ProcessingResult.SUCCESS;
+                        } else {
+                            log.info(
+                                String.format(
+                                    "Could not publish document '%s' to confluence server"
+                                    , document.title()
+                                )
+                            );
+                            if (appConfig.isDebug())
+                                System.out.println(convertedDocument);
+                            return ProcessingResult.FAILURE;
                         }
-                        return ProcessingResult.SUCCESS;
                     } else {
-                        log.info(
-                            String.format(
-                                "Could not publish document '%s' to confluence server"
-                                ,document.title()
-                            )
-                        );
-                        if (appConfig.isDebug())
-                            System.out.println(convertedDocument);
-                        return ProcessingResult.FAILURE;
+                        log.info("document '{}' is hidden, skip publishing", document.title());
+                        return ProcessingResult.SUCCESS;
                     }
                 }
             }
