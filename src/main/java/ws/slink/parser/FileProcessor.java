@@ -177,11 +177,11 @@ public class FileProcessor {
     public ProcessingResult publishOrPrint(Document document, String convertedDocument) {
         if (StringUtils.isNotBlank(appConfig.getUrl())) {
             if (!confluence.canPublish()) {
-                System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
+                log.warn("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
                 return ProcessingResult.FAILURE;
             } else {
                 if (!document.canPublish()) {
-                    System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
+                    log.warn("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
                     return ProcessingResult.FAILURE;
                 } else {
                     // delete page
@@ -211,7 +211,7 @@ public class FileProcessor {
                             }
                             return ProcessingResult.SUCCESS;
                         } else {
-                            log.info(
+                            log.warn(
                                 String.format(
                                     "Could not publish document '%s' to confluence server"
                                     , document.title()
@@ -222,8 +222,8 @@ public class FileProcessor {
                             return ProcessingResult.FAILURE;
                         }
                     } else {
-                        log.info("document '{}' is hidden, skip publishing", document.title());
-                        return ProcessingResult.SUCCESS;
+                        log.warn("document '{}' is hidden, skip publishing", document.title());
+                        return ProcessingResult.HIDDEN;
                     }
                 }
             }
