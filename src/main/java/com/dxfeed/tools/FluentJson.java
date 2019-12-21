@@ -1,4 +1,4 @@
-package ws.slink.tools;
+package com.dxfeed.tools;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
