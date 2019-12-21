@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class CodeBlockPreProcessor extends Preprocessor {
 
-    private static final String CODE_START = "(.*)(\\[source)(.*\\])(.*)";
+    private static final String CODE_START = "^(\\[source)(.*\\])$";
     private static final Pattern START_PATTERN = Pattern.compile(CODE_START, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
@@ -24,7 +24,7 @@ public class CodeBlockPreProcessor extends Preprocessor {
         lines.stream().forEach(line -> {
             Matcher m = START_PATTERN.matcher(line);
             if (m.matches()) {
-                newLines.add(line.replace(m.group(2), "[code"));
+                newLines.add(line.replace(m.group(1), "[code"));
             } else {
                 newLines.add(line);
             }

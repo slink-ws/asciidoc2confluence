@@ -131,7 +131,7 @@ public class FileProcessor {
                 .title(getDocumentParam(lines, titleTemplate, null))
                 .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
-                .hidden(lines.stream().filter(s -> s.startsWith("//") && s.contains(hiddenTemplate)).findFirst().isPresent())
+                .hidden(getDocumentBooleanParam(lines, hiddenTemplate))
                 .inputFilename(inputFilename)
                 .contents(lines.stream().collect(Collectors.joining("\n")))
                 .tags(
@@ -145,7 +145,6 @@ public class FileProcessor {
         if (trackingService.contains(document.title()))
             log.warn("document '{}' already processed in this batch; suspected document title repeating", document.title());
         trackingService.add(document.title());
-
         if (!FilenameUtils.getBaseName(inputFilename)
             .replaceAll(" ", "_")
             .equalsIgnoreCase(document.title().replaceAll(" ", "_")))
@@ -246,5 +245,21 @@ public class FileProcessor {
             .replace("/", "")
             .trim()
         ;
+    }
+    private boolean getDocumentBooleanParam(List<String> lines, String key) {
+        Optional<String> argument =
+            lines.stream()
+                .filter(s -> s.startsWith("//") && s.contains(key))
+                .findFirst();
+        if (!argument.isPresent()) {
+            return false;
+        } else {
+            String value = argument.get()
+                .replaceAll("/", "")
+                .replace(key, "")
+                .trim();
+            log.trace("hidden value: '{}'", value);
+            return (StringUtils.isBlank(value)) ? true : Boolean.parseBoolean(value);
+        }
     }
 }
