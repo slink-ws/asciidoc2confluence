@@ -119,3 +119,22 @@ You can insert confluence page tree macro into source asciidoc files to be rende
 ```
 // pagetree::Root+page+name[]
 ```
+
+## Disable document publishing
+For testing purposes or during documentation preparation you may need to prevent existing document
+from publishing to confluence server. For this you can use `DOCUMENT-HIDDEN` header like this:
+```
+// prevents document from publication
+// :DOCUMENT-HIDDEN:    
+```
+
+```
+// prevents document from publication
+// :DOCUMENT-HIDDEN: true    
+```
+
+```
+// allows document publication
+// :DOCUMENT-HIDDEN: false
+```
+

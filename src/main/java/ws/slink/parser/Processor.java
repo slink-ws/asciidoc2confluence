@@ -56,6 +56,7 @@ public class Processor {
             .append("publishing time       : " + DurationFormatUtils.formatDuration( timeC - timeB, "HH:mm:ss")).append("\n")
             .append("successfully processed: " + result.successful().get()).append("\n")
             .append("processing failures   : " + result.failed().get()).append("\n")
+            .append("hidden documents      : " + result.skippedHidden().get()).append("\n")
             .append("duplicate titles      : ").append("\n")
             .append(trackingService
                 .get()

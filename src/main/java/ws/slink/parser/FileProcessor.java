@@ -46,6 +46,9 @@ public class FileProcessor {
     @Value("${asciidoc.template.parent}")
     private String parentTemplate;
 
+    @Value("${asciidoc.template.hidden}")
+    private String hiddenTemplate;
+
     @Value("${asciidoc.template.tags}")
     private String tagsTemplate;
 
@@ -128,6 +131,7 @@ public class FileProcessor {
                 .title(getDocumentParam(lines, titleTemplate, null))
                 .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
+                .hidden(getDocumentBooleanParam(lines, hiddenTemplate))
                 .inputFilename(inputFilename)
                 .contents(lines.stream().collect(Collectors.joining("\n")))
                 .tags(
@@ -141,7 +145,6 @@ public class FileProcessor {
         if (trackingService.contains(document.title()))
             log.warn("document '{}' already processed in this batch; suspected document title repeating", document.title());
         trackingService.add(document.title());
-
         if (!FilenameUtils.getBaseName(inputFilename)
             .replaceAll(" ", "_")
             .equalsIgnoreCase(document.title().replaceAll(" ", "_")))
@@ -173,11 +176,11 @@ public class FileProcessor {
     public ProcessingResult publishOrPrint(Document document, String convertedDocument) {
         if (StringUtils.isNotBlank(appConfig.getUrl())) {
             if (!confluence.canPublish()) {
-                System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
+                log.warn("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
                 return ProcessingResult.FAILURE;
             } else {
                 if (!document.canPublish()) {
-                    System.err.println("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
+                    log.warn("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
                     return ProcessingResult.FAILURE;
                 } else {
                     // delete page
@@ -185,36 +188,41 @@ public class FileProcessor {
                     // delete old page in case of renaming
                     if (StringUtils.isNotBlank(document.oldTitle()))
                         confluence.getPageId(document.space(), document.oldTitle()).ifPresent(id -> confluence.deletePage(id, document.oldTitle()));
-                    // publish to confluence
-                    if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
-                        log.info(
-                            String.format(
-                                "Published document to confluence: %s/display/%s/%s"
-                                ,appConfig.getUrl()
-                                ,document.space()
-                                ,document.title().replaceAll(" ", "+")
-                            )
-                        );
-                        if (confluence.tagPage(document.space(), document.title(), document.tags())
-                        ) {
+                    // check if document needs to be published
+                    if (!document.hidden()) {
+                        // publish to confluence
+                        if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
                             log.info(
                                 String.format(
-                                    "Labeled document with tags: %s"
-                                    ,document.tags()
+                                    "Published document to confluence: %s/display/%s/%s"
+                                    , appConfig.getUrl()
+                                    , document.space()
+                                    , document.title().replaceAll(" ", "+")
                                 )
                             );
+                            if (confluence.tagPage(document.space(), document.title(), document.tags())) {
+                                log.info(
+                                    String.format(
+                                        "Labeled document with tags: %s"
+                                        , document.tags()
+                                    )
+                                );
+                            }
+                            return ProcessingResult.SUCCESS;
+                        } else {
+                            log.warn(
+                                String.format(
+                                    "Could not publish document '%s' to confluence server"
+                                    , document.title()
+                                )
+                            );
+                            if (appConfig.isDebug())
+                                System.out.println(convertedDocument);
+                            return ProcessingResult.FAILURE;
                         }
-                        return ProcessingResult.SUCCESS;
                     } else {
-                        log.info(
-                            String.format(
-                                "Could not publish document '%s' to confluence server"
-                                ,document.title()
-                            )
-                        );
-                        if (appConfig.isDebug())
-                            System.out.println(convertedDocument);
-                        return ProcessingResult.FAILURE;
+                        log.warn("document '{}' is hidden, skip publishing", document.title());
+                        return ProcessingResult.HIDDEN;
                     }
                 }
             }
@@ -237,5 +245,21 @@ public class FileProcessor {
             .replace("/", "")
             .trim()
         ;
+    }
+    private boolean getDocumentBooleanParam(List<String> lines, String key) {
+        Optional<String> argument =
+            lines.stream()
+                .filter(s -> s.startsWith("//") && s.contains(key))
+                .findFirst();
+        if (!argument.isPresent()) {
+            return false;
+        } else {
+            String value = argument.get()
+                .replaceAll("/", "")
+                .replace(key, "")
+                .trim();
+            log.trace("hidden value: '{}'", value);
+            return (StringUtils.isBlank(value)) ? true : Boolean.parseBoolean(value);
+        }
     }
 }

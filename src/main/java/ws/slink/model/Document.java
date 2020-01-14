@@ -18,6 +18,7 @@ public class Document {
     private String space;
     private String parent;
     private String contents;
+    private boolean hidden = false;
     private List<String> tags;
 
     @Override
