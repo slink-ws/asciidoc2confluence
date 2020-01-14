@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta-runner name="Asciidoc Convert &amp; Publish">
+    <description>convert and publish to confluence asciidocumentation from assigned VCS</description>
+    <settings>
+        <parameters>
+            <param name="env.URL"             value="" />
+            <param name="env.USER"            value="" />
+            <param name="env.PASSWORD"        value="" spec="password display='normal'" />
+            <param name="env.CLEAN_SPACE"     value="" />
+            <param name="env.FORCED_CLEANUP"  value="" />
+            <param name="env.PUBLISH"         value="" />
+            <param name="env.SPACE_OVERRIDE"  value="" />
+        </parameters>
+        <build-runners>
+            <runner name="Get Latest asciidoc2confluence.jar" type="simpleRunner">
+                <parameters>
+                    <param name="script.content"><![CDATA[URL="$(curl -s https://api.github.com/repos/dxfeed/asciidoc2confluence/releases/latest | grep "browser_download_url.*tar.gz" | cut -d : -f 2,3 | tr -d \")"
+curl -s -L --url $URL | tar xvz]]></param>
+                    <param name="teamcity.step.mode" value="default" />
+                    <param name="use.custom.script" value="true" />
+                </parameters>
+            </runner>
+            <runner name="Convert &amp; Publish" type="simpleRunner">
+                <parameters>
+                    <param name="script.content"><![CDATA[#!/usr/bin/env bash
+
+# environment variables
+# ----------------------------
+# [O] CLEAN_SPACE
+# [O] FORCED_CLEANUP
+# [O] SPACE_OVERRIDE
+# [M] URL
+# [M] USER
+# [M] PASSWORD
+# ----------------------------
+#
+# [O] - optional
+# [M] - mandatory
+#
+# ----------------------------
+
+# check mandatory arguments
+if [ -z "$URL" ]; then
+  echo "error: URL not set"
+  exit 1
+fi
+if [ -z "$USER" ]; then
+  echo "error: USER not set"
+  exit 2
+fi
+if [ -z "$PASSWORD" ]; then
+  echo "error: PASSWORD not set"
+  exit 3
+fi
+
+# set run arguments
+FLAGS=""
+
+if [ -n "$CLEAN_SPACE" ]; then
+   FLAGS="$FLAGS --clean=$(echo $CLEAN_SPACE | tr -d ' ')"
+fi
+
+if [ $FORCED_CLEANUP ]; then
+   FLAGS="$FLAGS --force"
+fi
+
+if [ -n "$SPACE_OVERRIDE" ]; then
+   FLAGS="$FLAGS --space=$SPACE_OVERRIDE"
+fi
+
+if [ $PUBLISH ]; then
+   FLAGS="$FLAGS --dir=$(pwd)"
+fi
+
+echo $FLAGS
+
+java -jar asciidoc2confluence.jar --url=$URL --user=$USER --pass=$PASSWORD $FLAGS]]></param>
+                    <param name="teamcity.step.mode" value="default" />
+                    <param name="use.custom.script" value="true" />
+                </parameters>
+            </runner>
+            <runner name="Print Logs" type="simpleRunner">
+                <parameters>
+                    <param name="script.content" value="cat *.log" />
+                    <param name="teamcity.step.mode" value="default" />
+                    <param name="use.custom.script" value="true" />
+                </parameters>
+            </runner>
+            <runner name="Clean Up Workdir" type="simpleRunner">
+                <parameters>
+                    <param name="script.content" value="rm -rf *" />
+                    <param name="teamcity.step.mode" value="default" />
+                    <param name="use.custom.script" value="true" />
+                </parameters>
+            </runner>
+        </build-runners>
+        <requirements />
+    </settings>
+</meta-runner>
+
+
