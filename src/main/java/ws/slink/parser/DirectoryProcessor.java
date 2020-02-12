@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static ws.slink.model.ProcessingResult.ResultType.*;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor (onConstructor = @__(@Autowired))
@@ -42,7 +44,7 @@ public class DirectoryProcessor {
             log.error("error processing files in {}: {}", directoryPath, e.getMessage());
             if (log.isTraceEnabled())
                 e.printStackTrace();
-            return ProcessingResult.FAILURE;
+            return new ProcessingResult(RT_FILE_FAILURE);
         }
     }
 
@@ -61,7 +63,7 @@ public class DirectoryProcessor {
             log.error("error processing directory {}: {}", directoryPath, e.getMessage());
             if (log.isTraceEnabled())
                 e.printStackTrace();
-            return ProcessingResult.FAILURE;
+            return new ProcessingResult(RT_DIR_FAILURE);
         }
     }
 

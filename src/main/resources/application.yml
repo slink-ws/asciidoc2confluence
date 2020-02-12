@@ -5,14 +5,17 @@ asciidoc:
   template:
     space-key: ":DOCUMENT-SPACE-KEY:"
     title: ":DOCUMENT-TITLE:"
-    title-old: ":DOCUMENT-TITLE:-OLD"
+    title-old: ":DOCUMENT-TITLE-OLD:"
     parent: ":DOCUMENT-PARENT:"
     hidden: ":DOCUMENT-HIDDEN:"
     tags: ":DOCUMENT-TAGS:"
+    draft: ":DOCUMENT-DRAFT:"
 
 confluence:
   protected:
     label: ${PROTECTED_LABELS:_dx_kb_keep}
+  urls:
+    versions: experimental
 
 server:
   port: 8088
@@ -26,4 +29,4 @@ spring:
 logging:
   level:
     root: WARN
-    ws.slink: INFO
+    ws.slink: TRACE

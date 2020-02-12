@@ -15,6 +15,8 @@ import ws.slink.service.TrackingService;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
+import static ws.slink.model.ProcessingResult.ResultType.*;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -54,9 +56,11 @@ public class Processor {
             .append("total time taken      : " + DurationFormatUtils.formatDuration( timeC - timeA, "HH:mm:ss")).append("\n")
             .append("clean up time         : " + DurationFormatUtils.formatDuration( timeB - timeA, "HH:mm:ss")).append("\n")
             .append("publishing time       : " + DurationFormatUtils.formatDuration( timeC - timeB, "HH:mm:ss")).append("\n")
-            .append("successfully processed: " + result.successful().get()).append("\n")
-            .append("processing failures   : " + result.failed().get()).append("\n")
-            .append("hidden documents      : " + result.skippedHidden().get()).append("\n")
+            .append("successfully published: " + result.get(RT_PUB_SUCCESS).get()).append("\n")
+            .append("publishing failures   : " + result.get(RT_PUB_FAILURE).get()).append("\n")
+            .append("successfully updated  : " + result.get(RT_UPD_SUCCESS).get()).append("\n")
+            .append("update failures       : " + result.get(RT_UPD_FAILURE).get()).append("\n")
+            .append("hidden documents      : " + result.get(RT_SKP_HIDDEN).get()).append("\n")
             .append("duplicate titles      : ").append("\n")
             .append(trackingService
                 .get()

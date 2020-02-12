@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ws.slink.atlassian.Confluence;
 import ws.slink.config.AppConfig;
-import ws.slink.config.CommandLineArguments;
 import ws.slink.model.Document;
 import ws.slink.model.ProcessingResult;
 import ws.slink.processor.*;
@@ -25,9 +24,12 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ws.slink.model.ProcessingResult.ResultType.*;
 
 @Slf4j
 @Component
@@ -48,6 +50,9 @@ public class FileProcessor {
 
     @Value("${asciidoc.template.hidden}")
     private String hiddenTemplate;
+
+    @Value("${asciidoc.template.draft}")
+    private String draftTemplate;
 
     @Value("${asciidoc.template.tags}")
     private String tagsTemplate;
@@ -132,6 +137,7 @@ public class FileProcessor {
                 .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
                 .hidden(getDocumentBooleanParam(lines, hiddenTemplate))
+//                .draft(getDocumentBooleanParam(lines, draftTemplate))
                 .inputFilename(inputFilename)
                 .contents(lines.stream().collect(Collectors.joining("\n")))
                 .tags(
@@ -173,66 +179,124 @@ public class FileProcessor {
             asciidoctor.shutdown();
         }
     }
+
     public ProcessingResult publishOrPrint(Document document, String convertedDocument) {
         if (StringUtils.isNotBlank(appConfig.getUrl())) {
             if (!confluence.canPublish()) {
                 log.warn("can't publish document '" + document.inputFilename() + "' to confluence: not all confluence parameters are set (url, login, password)");
-                return ProcessingResult.FAILURE;
+                return new ProcessingResult(RT_PUB_FAILURE);
             } else {
                 if (!document.canPublish()) {
                     log.warn("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
-                    return ProcessingResult.FAILURE;
+                    return new ProcessingResult(RT_PUB_FAILURE);
                 } else {
-                    // delete page
-                    confluence.getPageId(document.space(), document.title()).ifPresent(id -> confluence.deletePage(id, document.title()));
-                    // delete old page in case of renaming
-                    if (StringUtils.isNotBlank(document.oldTitle()))
-                        confluence.getPageId(document.space(), document.oldTitle()).ifPresent(id -> confluence.deletePage(id, document.oldTitle()));
-                    // check if document needs to be published
-                    if (!document.hidden()) {
-                        // publish to confluence
-                        if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
-                            log.info(
-                                String.format(
-                                    "Published document to confluence: %s/display/%s/%s"
-                                    , appConfig.getUrl()
-                                    , document.space()
-                                    , document.title().replaceAll(" ", "+")
-                                )
-                            );
-                            if (confluence.tagPage(document.space(), document.title(), document.tags())) {
-                                log.info(
-                                    String.format(
-                                        "Labeled document with tags: %s"
-                                        , document.tags()
-                                    )
-                                );
-                            }
-                            return ProcessingResult.SUCCESS;
-                        } else {
-                            log.warn(
-                                String.format(
-                                    "Could not publish document '%s' to confluence server"
-                                    , document.title()
-                                )
-                            );
-                            if (appConfig.isDebug())
-                                System.out.println(convertedDocument);
-                            return ProcessingResult.FAILURE;
-                        }
+                    // title to search for
+                    String title = StringUtils.isNotBlank(document.oldTitle()) ? document.oldTitle() : document.title();
+
+                    log.trace("searching for page '{}'", title);
+
+                    // get page id for given page
+                    Optional<String> pageIdOpt = confluence.getPageId(document.space(), title);
+                    // process
+                    if (pageIdOpt.isPresent()) {
+                        // if page with given title is found, update it
+                        log.trace("found page '{}'", title);
+                        return updateDocument(pageIdOpt.get(), document, convertedDocument);
                     } else {
-                        log.warn("document '{}' is hidden, skip publishing", document.title());
-                        return ProcessingResult.HIDDEN;
+                        // if not found, publish
+                        log.trace("not found page '{}'", title);
+                        return publishDocument(document, convertedDocument);
                     }
                 }
             }
         } else {
             // or print to stdout
             System.out.println(convertedDocument);
-            return ProcessingResult.SUCCESS;
+            return new ProcessingResult(RT_FILE_SUCCESS);
         }
     }
 
+    private ProcessingResult updateDocument(String pageId, Document document, String convertedDocument) {
+        // if found, update page
+        if (document.hidden()) {
+            if (confluence.deletePage(pageId, document.title()) > 0) {
+                log.info("document '{}' removed from server", document.title());
+                return new ProcessingResult(RT_DEL_SUCCESS);
+            } else {
+                log.warn("could not remove document '{}' from server", document.title());
+                return new ProcessingResult(RT_DEL_FAILURE);
+            }
+        } else {
+            if (confluence.updatePage(pageId, document.title(), "current", convertedDocument)) {
+                log.info(
+                    String.format(
+                        "Updated document in confluence: %s/display/%s/%s"
+                        , appConfig.getUrl()
+                        , document.space()
+                        , document.title().replaceAll(" ", "+")
+                    )
+                );
+
+                // remove stale tags from confluence document
+                Collection<String> serverTags = confluence.getTags(pageId);
+                serverTags.removeAll(document.tags());
+                confluence.removeTags(pageId, serverTags);
+
+                // add new tags to confluence document
+                document.tags().removeAll(serverTags);
+                confluence.tagPage(pageId, document.tags());
+
+                return new ProcessingResult(RT_UPD_SUCCESS);
+            } else {
+                log.warn(
+                    String.format(
+                        "Could not update document '%s' in confluence"
+                        , document.title()
+                    )
+                );
+                if (appConfig.isDebug())
+                    System.out.println(convertedDocument);
+                return new ProcessingResult(RT_UPD_FAILURE);
+            }
+        }
+    }
+    private ProcessingResult publishDocument(Document document, String convertedDocument) {
+        if (!document.hidden()) {
+            // publish page
+            if (confluence.publishPage(document.space(), document.title(), document.parent(), "current", convertedDocument)) {
+                log.info(
+                    String.format(
+                        "Published document to confluence: %s/display/%s/%s"
+                        , appConfig.getUrl()
+                        , document.space()
+                        , document.title().replaceAll(" ", "+")
+                    )
+                );
+                if (confluence.tagPage(document.space(), document.title(), document.tags())) {
+                    log.info(
+                        String.format(
+                            "Labeled document with tags: %s"
+                            , document.tags()
+                        )
+                    );
+                }
+                return new ProcessingResult(RT_PUB_SUCCESS);
+            } else {
+                log.warn(
+                    String.format(
+                        "Could not publish document '%s' to confluence server"
+                        , document.title()
+                    )
+                );
+                if (appConfig.isDebug())
+                    System.out.println(convertedDocument);
+                return new ProcessingResult(RT_PUB_FAILURE);
+            }
+        } else {
+            log.warn("document '{}' is hidden, skip publishing", document.title());
+            return new ProcessingResult(RT_SKP_HIDDEN);
+        }
+    }
     private String getDocumentParam(List<String> lines, String key, String override) {
         return (StringUtils.isNotBlank(override))
             ? override
@@ -263,3 +327,49 @@ public class FileProcessor {
         }
     }
 }
+
+
+
+/*
+// delete page
+confluence.getPageId(document.space(), document.title()).ifPresent(id -> confluence.deletePage(id, document.title()));
+// delete old page in case of renaming
+if (StringUtils.isNotBlank(document.oldTitle()))
+    confluence.getPageId(document.space(), document.oldTitle()).ifPresent(id -> confluence.deletePage(id, document.oldTitle()));
+// check if document needs to be published
+if (!document.hidden()) {
+    // publish to confluence
+    if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
+        log.info(
+            String.format(
+                "Published document to confluence: %s/display/%s/%s"
+                , appConfig.getUrl()
+                , document.space()
+                , document.title().replaceAll(" ", "+")
+            )
+        );
+        if (confluence.tagPage(document.space(), document.title(), document.tags())) {
+            log.info(
+                String.format(
+                    "Labeled document with tags: %s"
+                    , document.tags()
+                )
+            );
+        }
+        return ProcessingResult.SUCCESS;
+    } else {
+        log.warn(
+            String.format(
+                "Could not publish document '%s' to confluence server"
+                , document.title()
+            )
+        );
+        if (appConfig.isDebug())
+            System.out.println(convertedDocument);
+        return ProcessingResult.FAILURE;
+    }
+} else {
+    log.warn("document '{}' is hidden, skip publishing", document.title());
+    return ProcessingResult.HIDDEN;
+}
+/**/

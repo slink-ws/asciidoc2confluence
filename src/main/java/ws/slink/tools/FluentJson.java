@@ -26,8 +26,12 @@ public class FluentJson implements Iterable<Object> {
     public FluentJson (Object value) {
         this.value = value;
     }
-    public FluentJson (String jsonStr) throws ParseException {
-        this.value = new JSONParser().parse(jsonStr);
+    public FluentJson (String jsonStr) {
+        try {
+            this.value = new JSONParser().parse(jsonStr);
+        } catch (Exception e) {
+            this.value = new JSONObject();
+        }
     }
 
     public static FluentJson copy(FluentJson jsonObj) {
@@ -155,10 +159,10 @@ public class FluentJson implements Iterable<Object> {
             throw new IllegalArgumentException("value object is neither JSONObject nor JSONArray: " + value.getClass().getName());
     }
 
-//    public String toPrettyString(int indentFactor) {
-//        org.json.JSONObject json = new org.json.JSONObject(this.toString());
-//        return json.toString(indentFactor);
-//    }
+    public String toPrettyString(int indentFactor) {
+        org.json.JSONObject json = new org.json.JSONObject(this.toString());
+        return json.toString(indentFactor);
+    }
 
     public static final String JSON_STR = "{\"entries\": [{\"runs\": [{\"id\": 11}, {\"id\": 12}, {\"id\": 13}]},{\"runs\": [{\"id\": 21}, {\"id\": 22}, {\"id\": 23}]}]}";
     public static void main(String [] args) throws ParseException {

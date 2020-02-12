@@ -13,6 +13,7 @@ public class Page {
 
     String id;
     String title;
+    int version;
     List<String> labels;
 
     public String toString() {
@@ -20,6 +21,8 @@ public class Page {
             .append(id)
             .append(":")
             .append(title)
+            .append(" v.")
+            .append(version)
             .append(" ")
             .append(labels.toString())
             .toString()
