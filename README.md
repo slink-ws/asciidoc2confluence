@@ -3,7 +3,9 @@ Asciidoc to confluence converter & uploader
 
 
 ## Motivation
-Motivation for this project has rosen from the need to convert AsciiDoc documents with code blocks to confluence. As standard asciidoctor behavior does not let to insert code blocks in format of confluence code macro, we need to postprocess asciidoctor output.
+Motivation for this project has risen from the need to convert AsciiDoc documents with code blocks to confluence. 
+As standard asciidoctor behavior does not let to insert code blocks in format of confluence code macro, we need 
+to postprocess asciidoctor output.
 
 
 ## Publishing to Confluence
@@ -11,18 +13,16 @@ To publish a document to confluence server its meta-parameters should be known.
 Parser takes these parameters from comments in input file:
 
 ```
-// :DOCUMENT-SPACE-KEY: CONFLUENCE-SPACE-KEY [mandatory header]
 // :DOCUMENT-TITLE: Document title [mandatory header]
 // :DOCUMENT-TITLE-OLD: Old document title (in case if document is being renamed) [optional header]
 // :DOCUMENT-PARENT: Parent page title [optional header]
 // :DOCUMENT-TAGS: tag1, long tag 2, tag3 [optional header]
 ```
 
-You can override document's SPACE-KEY parameter, if you want to publish document to another space for testing purposes.
-For this use `--space=ANOTHERSPACE` command-line argument.  
+... and from command-line argument `--space=CONFLUENCE_SPACE_KEY`.  
 
-- If document with `DOCUMENT-TITLE` title already exists, it will be overwritten
-- If document with `DOCUMENT-TITLE-OLD` title exists, it will be removed
+- If document with `DOCUMENT-TITLE` title already exists, its content/title/tags will be updated
+- If document with `DOCUMENT-TITLE-OLD` title exists, it will be removed to `DOCUMENT-TITLE`
 - If document with `DOCUMENT-PARENT` title exists, new document will be added to its children
 
 Also confluence server credentials should be provisioned to program:
@@ -35,6 +35,11 @@ If confluence credentials are not passed to program, converted document(s) will 
 
 For debugging purposes you can print converted document onto STDOUT in case of publishing error. 
 Use `--debug` argument for this.
+
+*NOTE*: From now on `DOCUMENT-SPACE` parameter is not used to specify document's space in confluence. This means, that 
+confluence space to work with should be provided with `--space` command-line argument. Which, in turn, means that all 
+the input files should go to the same confluence space.  
+
 
 ## Cleaning up Confluence space(s)
 You can clean up _space_ in confluence before publishing pages. For this use `--clean=SPACE1,SPACE2` command-line 
@@ -72,6 +77,34 @@ If `DOCUMENT-TAGS` header is set for document, related page on confluence will b
 should be separated with commas. Spaces in multi-word tags will be converted to underscores ('_'), as confluence does 
 not support multi-word labels 
 (see [here](https://confluence.atlassian.com/jirakb/creating-multiple-word-labels-779160786.html)).
+
+
+## Removing stale documents
+After being published to confluence server some documents can be later removed from document repository. Such documents 
+are found during directory processing and removed from confluence server.
+ 
+(Program gets a list of all the documents in local repository and all the documents from confluence server [for given 
+`space`]. All the documents found on a server and not found in local repository will be removed from server.) 
+
+
+## Disable document publishing
+For testing purposes or during documentation preparation you may need to prevent existing document
+from being published to confluence server. For this you can use `DOCUMENT-HIDDEN` header like this:
+```
+// prevents document from publication
+// :DOCUMENT-HIDDEN:    
+```
+
+```
+// prevents document from publication
+// :DOCUMENT-HIDDEN: true    
+```
+
+```
+// allows document publication
+// :DOCUMENT-HIDDEN: false
+```
+If document is already published and then marked with `DOCUMENT-HIDDEN` flag, it will be removed from server.
 
 
 ## Links processing
@@ -118,23 +151,5 @@ You can insert confluence page tree macro into source asciidoc files to be rende
 
 ```
 // pagetree::Root+page+name[]
-```
-
-## Disable document publishing
-For testing purposes or during documentation preparation you may need to prevent existing document
-from publishing to confluence server. For this you can use `DOCUMENT-HIDDEN` header like this:
-```
-// prevents document from publication
-// :DOCUMENT-HIDDEN:    
-```
-
-```
-// prevents document from publication
-// :DOCUMENT-HIDDEN: true    
-```
-
-```
-// allows document publication
-// :DOCUMENT-HIDDEN: false
 ```
 

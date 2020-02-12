@@ -36,8 +36,8 @@ import static ws.slink.model.ProcessingResult.ResultType.*;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FileProcessor {
 
-    @Value("${asciidoc.template.space-key}")
-    private String spaceKeyTemplate;
+//    @Value("${asciidoc.template.space-key}")
+//    private String spaceKeyTemplate;
 
     @Value("${asciidoc.template.title}")
     private String titleTemplate;
@@ -123,6 +123,9 @@ public class FileProcessor {
         return result;
     }
     public Optional<Document> read(String inputFilename) {
+        return read(inputFilename, false);
+    }
+    public Optional<Document> read(String inputFilename, boolean trackDuplicates) {
         List<String> lines;
         try {
             lines = FileUtils.readLines(new File(inputFilename), "utf-8");
@@ -132,7 +135,7 @@ public class FileProcessor {
         }
         Document document =
             new Document()
-                .space(getDocumentParam(lines, spaceKeyTemplate, appConfig.getSpace()))
+                .space(appConfig.getSpace()/*getDocumentParam(lines, spaceKeyTemplate, appConfig.getSpace())*/)
                 .title(getDocumentParam(lines, titleTemplate, null))
                 .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
@@ -148,9 +151,11 @@ public class FileProcessor {
                     .collect(Collectors.toList())
         );
 
-        if (trackingService.contains(document.title()))
-            log.warn("document '{}' already processed in this batch; suspected document title repeating", document.title());
-        trackingService.add(document.title());
+        if (trackDuplicates) {
+            if (trackingService.contains(document.title()))
+                log.warn("document '{}' already processed in this batch; suspected document title repeating", document.title());
+            trackingService.add(document.title());
+        }
         if (!FilenameUtils.getBaseName(inputFilename)
             .replaceAll(" ", "_")
             .equalsIgnoreCase(document.title().replaceAll(" ", "_")))

@@ -12,7 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static ws.slink.model.ProcessingResult.ResultType.*;
+import static ws.slink.model.ProcessingResult.ResultType.RT_DIR_FAILURE;
+import static ws.slink.model.ProcessingResult.ResultType.RT_FILE_FAILURE;
 
 @Slf4j
 @Component

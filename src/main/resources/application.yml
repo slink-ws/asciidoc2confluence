@@ -3,7 +3,7 @@ asciidoc:
     language:
       default: text
   template:
-    space-key: ":DOCUMENT-SPACE-KEY:"
+#    space-key: ":DOCUMENT-SPACE-KEY:"
     title: ":DOCUMENT-TITLE:"
     title-old: ":DOCUMENT-TITLE-OLD:"
     parent: ":DOCUMENT-PARENT:"
@@ -29,4 +29,4 @@ spring:
 logging:
   level:
     root: WARN
-    ws.slink: TRACE
+    ws.slink: INFO
