@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ws.slink.atlassian.Confluence;
 import ws.slink.config.AppConfig;
@@ -37,6 +38,9 @@ public class Processor {
     private final @NonNull FileProcessor fileProcessor;
     private final @NonNull Confluence confluence;
     private final @NonNull TrackingService trackingService;
+
+    @Value("${confluence.protected.label:}")
+    private List<String> protectedLabels;
 
     public String process() {
 
@@ -95,7 +99,12 @@ public class Processor {
             List<String> repoTitles = documents.stream().map(d -> d.title()).collect(Collectors.toList());
 
             Collection<Page> pages = confluence.getPages(appConfig.getSpace());
-            List<String> serverTitles = pages.stream().map(d -> d.title()).collect(Collectors.toList());
+
+            List<String> serverTitles = pages
+                .stream()
+                .filter(p -> p.labels().stream().noneMatch(protectedLabels::contains))
+                .map(d -> d.title()).collect(Collectors.toList());
+//            List<String> serverTitles = pages.stream().map(d -> d.title()).collect(Collectors.toList());
 
             serverTitles.removeAll(repoTitles);
             if (serverTitles.size() > 0) {
