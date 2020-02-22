@@ -1,4 +1,4 @@
-package ws.slink.service;
+package com.dxfeed.service;
 
 import org.springframework.stereotype.Service;
 
