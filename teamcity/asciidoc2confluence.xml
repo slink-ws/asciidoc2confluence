@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<meta-runner name="Asciidoc Convert &amp; Publish">
+<meta-runner name="Asciidoc Convert &amp; Publish to Confluence Server">
     <description>convert and publish to confluence asciidocumentation from assigned VCS</description>
     <settings>
         <parameters>
@@ -10,6 +10,7 @@
             <param name="env.FORCED_CLEANUP"  value="" />
             <param name="env.PUBLISH"         value="" />
             <param name="env.SPACE_OVERRIDE"  value="" />
+            <param name="env.DIR"             value="" />
         </parameters>
         <build-runners>
             <runner name="Get Latest asciidoc2confluence.jar" type="simpleRunner">
@@ -32,6 +33,7 @@ curl -s -L --url $URL | tar xvz]]></param>
 # [M] URL
 # [M] USER
 # [M] PASSWORD
+# [M] DIR
 # ----------------------------
 #
 # [O] - optional
@@ -68,8 +70,11 @@ if [ -n "$SPACE_OVERRIDE" ]; then
    FLAGS="$FLAGS --space=$SPACE_OVERRIDE"
 fi
 
+
 if [ $PUBLISH ]; then
-   FLAGS="$FLAGS --dir=$(pwd)"
+    if [ -n "$DIR" ]; then
+       FLAGS="$FLAGS --dir=$DIR"
+    fi
 fi
 
 echo $FLAGS
