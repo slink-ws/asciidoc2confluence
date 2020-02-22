@@ -141,6 +141,7 @@ public class Confluence {
             });
 
         log.trace("DATA: {}", fj.toString());
+
         return exchange(
              url
             ,HttpMethod.POST

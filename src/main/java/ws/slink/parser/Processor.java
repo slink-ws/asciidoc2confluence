@@ -69,17 +69,16 @@ public class Processor {
 
         return new StringBuilder()
             .append("-------------------------------------------------------------").append("\n")
-            .append("total time taken      : " + DurationFormatUtils.formatDuration( timeC - timeA, "HH:mm:ss")).append("\n")
-            .append("clean up time         : " + DurationFormatUtils.formatDuration( timeB - timeA, "HH:mm:ss")).append("\n")
-            .append("publishing time       : " + DurationFormatUtils.formatDuration( timeC - timeB, "HH:mm:ss")).append("\n")
-            .append("successfully published: " + result.get(RT_PUB_SUCCESS).get()).append("\n")
-            .append("publishing failures   : " + result.get(RT_PUB_FAILURE).get()).append("\n")
-            .append("successfully updated  : " + result.get(RT_UPD_SUCCESS).get()).append("\n")
-            .append("update failures       : " + result.get(RT_UPD_FAILURE).get()).append("\n")
-            .append("successfully removed  : " + result.get(RT_DEL_SUCCESS).get()).append("\n")
-            .append("removal failures      : " + result.get(RT_DEL_FAILURE).get()).append("\n")
-//            .append("hidden documents      : " + result.get(RT_SKP_HIDDEN).get()).append("\n")
-            .append("duplicate titles      : ").append("\n")
+            .append("total time taken   : " + DurationFormatUtils.formatDuration( timeC - timeA, "HH:mm:ss")).append("\n")
+            .append("clean up time      : " + DurationFormatUtils.formatDuration( timeB - timeA, "HH:mm:ss")).append("\n")
+            .append("publishing time    : " + DurationFormatUtils.formatDuration( timeC - timeB, "HH:mm:ss")).append("\n")
+            .append("-------------------------------------------------------------").append("\n")
+            .append(String.format("%20s %10s %10s\n", "", "SUCCESS", "FAILURE"))
+            .append(getStatStr("published          :", result.get(RT_PUB_SUCCESS).get(), result.get(RT_PUB_FAILURE).get(), "\n"))
+            .append(getStatStr("updated            :", result.get(RT_UPD_SUCCESS).get(), result.get(RT_UPD_FAILURE).get(), "\n"))
+            .append(getStatStr("removed            :", result.get(RT_DEL_SUCCESS).get(), result.get(RT_DEL_FAILURE).get(), "\n"))
+            .append(getStatStr("skipped hidden     :", result.get(RT_SKP_HIDDEN).get(), null, "\n"))
+            .append(String.format("%20s", "duplicate titles   :")).append("\n")
             .append(trackingService
                 .get()
                 .entrySet()
@@ -159,5 +158,11 @@ public class Processor {
         return documents;
     }
 
+    private String getStatStr(String prefix, Integer success, Integer failures, String suffix) {
+        if (null == failures)
+            return String.format("%20s %10d %10s%s", prefix, success, "-", suffix);
+        else
+            return String.format("%20s %10d %10d%s", prefix, success, failures, suffix);
+    }
 
 }

@@ -9,7 +9,6 @@ asciidoc:
     parent: ":DOCUMENT-PARENT:"
     hidden: ":DOCUMENT-HIDDEN:"
     tags: ":DOCUMENT-TAGS:"
-    draft: ":DOCUMENT-DRAFT:"
 
 confluence:
   protected:

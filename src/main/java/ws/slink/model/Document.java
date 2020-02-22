@@ -19,7 +19,6 @@ public class Document {
     private String parent;
     private String contents;
     private boolean hidden = false;
-//    private boolean draft = false;
     private List<String> tags;
 
     @Override

@@ -5,7 +5,8 @@
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                [D] %d{dd-MM-yyyy HH:mm:ss.SSS} %yellow([%thread]) %highlight(%-5level) %logger{36}.%M - %msg%n
+<!--                [D] %d{dd-MM-yyyy HH:mm:ss.SSS} %yellow([%thread{15}]) %highlight(%-5level) %logger{36}.%M - %msg%n-->
+                [D] %d{dd-MM-yyyy HH:mm:ss.SSS} %highlight(%-5level) %yellow(%logger{36}.%M\(%line{5}\)) - %msg%n
             </pattern>
         </encoder>
     </appender>

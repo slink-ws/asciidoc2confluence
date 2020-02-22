@@ -51,9 +51,6 @@ public class FileProcessor {
     @Value("${asciidoc.template.hidden}")
     private String hiddenTemplate;
 
-    @Value("${asciidoc.template.draft}")
-    private String draftTemplate;
-
     @Value("${asciidoc.template.tags}")
     private String tagsTemplate;
 
@@ -140,7 +137,6 @@ public class FileProcessor {
                 .oldTitle(getDocumentParam(lines, titleOldTemplate, null))
                 .parent(getDocumentParam(lines, parentTemplate, null))
                 .hidden(getDocumentBooleanParam(lines, hiddenTemplate))
-//                .draft(getDocumentBooleanParam(lines, draftTemplate))
                 .inputFilename(inputFilename)
                 .contents(lines.stream().collect(Collectors.joining("\n")))
                 .tags(
@@ -195,22 +191,29 @@ public class FileProcessor {
                     log.warn("can't publish document '" + document.inputFilename() + "' to confluence: not all document parameters are set (title, spaceKey)");
                     return new ProcessingResult(RT_PUB_FAILURE);
                 } else {
-                    // title to search for
-                    String title = StringUtils.isNotBlank(document.oldTitle()) ? document.oldTitle() : document.title();
 
-                    log.trace("searching for page '{}'", title);
+                    Optional<String> pageIdOpt = Optional.empty();
+                    if (StringUtils.isNotBlank(document.oldTitle())) {
+                        log.trace("searching for page with old title: '{}'", document.oldTitle());
+                        pageIdOpt = confluence.getPageId(document.space(), document.oldTitle());
+                    }
 
-                    // get page id for given page
-                    Optional<String> pageIdOpt = confluence.getPageId(document.space(), title);
-                    // process
                     if (pageIdOpt.isPresent()) {
-                        // if page with given title is found, update it
-                        log.trace("found page '{}'", title);
+                        // update old-titled document
+                        log.trace("found page (with old title) '{}'", document.oldTitle());
                         return updateDocument(pageIdOpt.get(), document, convertedDocument);
                     } else {
-                        // if not found, publish
-                        log.trace("not found page '{}'", title);
-                        return publishDocument(document, convertedDocument);
+                        log.trace("searching for page with title: '{}'", document.title());
+                        pageIdOpt = confluence.getPageId(document.space(), document.title());
+                        if (pageIdOpt.isPresent()) {
+                            // update new-tiled document
+                            log.trace("found page (with 'new' title)'{}'", document.title());
+                            return updateDocument(pageIdOpt.get(), document, convertedDocument);
+                        } else {
+                            // publish document
+                            log.trace("not found page with title '{}'; publishing new one", document.title());
+                            return publishDocument(document, convertedDocument);
+                        }
                     }
                 }
             }
@@ -246,10 +249,12 @@ public class FileProcessor {
                 Collection<String> serverTags = confluence.getTags(pageId);
                 serverTags.removeAll(document.tags());
                 confluence.removeTags(pageId, serverTags);
+                log.trace("removed page labels: {}", serverTags);
 
                 // add new tags to confluence document
                 document.tags().removeAll(serverTags);
                 confluence.tagPage(pageId, document.tags());
+                log.trace("added page labels: {}", document.tags());
 
                 return new ProcessingResult(RT_UPD_SUCCESS);
             } else {
