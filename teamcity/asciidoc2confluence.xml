@@ -11,6 +11,7 @@
             <param name="env.PUBLISH"         value="" />
             <param name="env.SPACE_OVERRIDE"  value="" />
             <param name="env.DIR"             value="" />
+            <param name="env.FILE"            value="" />
         </parameters>
         <build-runners>
             <runner name="Get Latest asciidoc2confluence.jar" type="simpleRunner">
@@ -33,7 +34,8 @@ curl -s -L --url $URL | tar xvz]]></param>
 # [M] URL
 # [M] USER
 # [M] PASSWORD
-# [M] DIR
+# [O] DIR
+# [O] FILE
 # ----------------------------
 #
 # [O] - optional
@@ -74,6 +76,8 @@ fi
 if [ $PUBLISH ]; then
     if [ -n "$DIR" ]; then
        FLAGS="$FLAGS --dir=$DIR"
+    elif [ -n "$FILE" ]; then
+       FLAGS="$FLAGS --input=$FILE"
     fi
 fi
 
