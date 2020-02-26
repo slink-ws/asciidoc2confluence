@@ -9,9 +9,10 @@
             <param name="env.CLEAN_SPACE"     value="" />
             <param name="env.FORCED_CLEANUP"  value="" />
             <param name="env.PUBLISH"         value="" />
-            <param name="env.SPACE_OVERRIDE"  value="" />
+            <param name="env.SPACE"           value="" />
             <param name="env.DIR"             value="" />
             <param name="env.FILE"            value="" />
+            <param name="env.LOG_LEVEL"       value="" />
         </parameters>
         <build-runners>
             <runner name="Get Latest asciidoc2confluence.jar" type="simpleRunner">
@@ -30,12 +31,13 @@ curl -s -L --url $URL | tar xvz]]></param>
 # ----------------------------
 # [O] CLEAN_SPACE
 # [O] FORCED_CLEANUP
-# [O] SPACE_OVERRIDE
+# [O] SPACE
 # [M] URL
 # [M] USER
 # [M] PASSWORD
 # [O] DIR
 # [O] FILE
+# [O] LOG_LEVEL
 # ----------------------------
 #
 # [O] - optional
@@ -68,17 +70,21 @@ if [ $FORCED_CLEANUP ]; then
    FLAGS="$FLAGS --force"
 fi
 
-if [ -n "$SPACE_OVERRIDE" ]; then
-   FLAGS="$FLAGS --space=$SPACE_OVERRIDE"
+if [ -n "$SPACE" ]; then
+   FLAGS="$FLAGS --space=$SPACE"
 fi
 
 
 if [ $PUBLISH ]; then
     if [ -n "$DIR" ]; then
-       FLAGS="$FLAGS --dir=$DIR"
+       FLAGS="$FLAGS --dir='$DIR'"
     elif [ -n "$FILE" ]; then
-       FLAGS="$FLAGS --input=$FILE"
+       FLAGS="$FLAGS --input='$FILE'"
     fi
+fi
+
+if [ -n "$LOGLEVEL" ]; then
+    export LOGLEVEL=$LOG_LEVEL
 fi
 
 echo $FLAGS
