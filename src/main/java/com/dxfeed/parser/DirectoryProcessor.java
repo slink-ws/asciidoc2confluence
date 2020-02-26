@@ -1,10 +1,10 @@
-package ws.slink.parser;
+package com.dxfeed.parser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ws.slink.model.ProcessingResult;
+import com.dxfeed.model.ProcessingResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static ws.slink.model.ProcessingResult.ResultType.RT_DIR_FAILURE;
-import static ws.slink.model.ProcessingResult.ResultType.RT_FILE_FAILURE;
+import static com.dxfeed.model.ProcessingResult.ResultType.RT_DIR_FAILURE;
+import static com.dxfeed.model.ProcessingResult.ResultType.RT_FILE_FAILURE;
 
 @Slf4j
 @Component

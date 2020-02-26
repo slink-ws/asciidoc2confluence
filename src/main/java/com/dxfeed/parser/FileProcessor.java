@@ -1,4 +1,4 @@
-package ws.slink.parser;
+package com.dxfeed.parser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +11,12 @@ import org.asciidoctor.SafeMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ws.slink.atlassian.Confluence;
-import ws.slink.config.AppConfig;
-import ws.slink.model.Document;
-import ws.slink.model.ProcessingResult;
-import ws.slink.processor.*;
-import ws.slink.service.TrackingService;
+import com.dxfeed.atlassian.Confluence;
+import com.dxfeed.config.AppConfig;
+import com.dxfeed.model.Document;
+import com.dxfeed.model.ProcessingResult;
+import com.dxfeed.processor.*;
+import com.dxfeed.service.TrackingService;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -29,15 +29,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ws.slink.model.ProcessingResult.ResultType.*;
+import static com.dxfeed.model.ProcessingResult.ResultType.*;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FileProcessor {
-
-//    @Value("${asciidoc.template.space-key}")
-//    private String spaceKeyTemplate;
 
     @Value("${asciidoc.template.title}")
     private String titleTemplate;
@@ -337,49 +334,3 @@ public class FileProcessor {
         }
     }
 }
-
-
-
-/*
-// delete page
-confluence.getPageId(document.space(), document.title()).ifPresent(id -> confluence.deletePage(id, document.title()));
-// delete old page in case of renaming
-if (StringUtils.isNotBlank(document.oldTitle()))
-    confluence.getPageId(document.space(), document.oldTitle()).ifPresent(id -> confluence.deletePage(id, document.oldTitle()));
-// check if document needs to be published
-if (!document.hidden()) {
-    // publish to confluence
-    if (confluence.publishPage(document.space(), document.title(), document.parent(), convertedDocument)) {
-        log.info(
-            String.format(
-                "Published document to confluence: %s/display/%s/%s"
-                , appConfig.getUrl()
-                , document.space()
-                , document.title().replaceAll(" ", "+")
-            )
-        );
-        if (confluence.tagPage(document.space(), document.title(), document.tags())) {
-            log.info(
-                String.format(
-                    "Labeled document with tags: %s"
-                    , document.tags()
-                )
-            );
-        }
-        return ProcessingResult.SUCCESS;
-    } else {
-        log.warn(
-            String.format(
-                "Could not publish document '%s' to confluence server"
-                , document.title()
-            )
-        );
-        if (appConfig.isDebug())
-            System.out.println(convertedDocument);
-        return ProcessingResult.FAILURE;
-    }
-} else {
-    log.warn("document '{}' is hidden, skip publishing", document.title());
-    return ProcessingResult.HIDDEN;
-}
-/**/

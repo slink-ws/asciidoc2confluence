@@ -1,4 +1,4 @@
-package ws.slink.atlassian;
+package com.dxfeed.atlassian;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import ws.slink.config.AppConfig;
-import ws.slink.model.Page;
-import ws.slink.tools.FluentJson;
+import com.dxfeed.config.AppConfig;
+import com.dxfeed.model.Page;
+import com.dxfeed.tools.FluentJson;
 
 import java.nio.charset.Charset;
 import java.util.*;

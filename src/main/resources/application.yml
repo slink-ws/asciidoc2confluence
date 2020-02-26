@@ -27,4 +27,4 @@ spring:
 logging:
   level:
     root: WARN
-    ws.slink: INFO
+    com.dxfeed: ${LOGLEVEL:INFO}

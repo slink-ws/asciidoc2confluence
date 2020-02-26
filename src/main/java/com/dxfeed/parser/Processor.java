@@ -1,4 +1,4 @@
-package ws.slink.parser;
+package com.dxfeed.parser;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -8,12 +8,12 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ws.slink.atlassian.Confluence;
-import ws.slink.config.AppConfig;
-import ws.slink.model.Document;
-import ws.slink.model.Page;
-import ws.slink.model.ProcessingResult;
-import ws.slink.service.TrackingService;
+import com.dxfeed.atlassian.Confluence;
+import com.dxfeed.config.AppConfig;
+import com.dxfeed.model.Document;
+import com.dxfeed.model.Page;
+import com.dxfeed.model.ProcessingResult;
+import com.dxfeed.service.TrackingService;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ws.slink.model.ProcessingResult.ResultType.*;
+import static com.dxfeed.model.ProcessingResult.ResultType.*;
 
 @Slf4j
 @Component
