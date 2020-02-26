@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <meta-runner name="Asciidoc Convert &amp; Publish to Confluence Server">
-    <description>convert and publish to confluence asciidocumentation from assigned VCS</description>
+    <description>asciidoc2confluence tool interface</description>
     <settings>
         <parameters>
-            <param name="env.URL"             value="" />
-            <param name="env.USER"            value="" />
-            <param name="env.PASSWORD"        value="" spec="password display='normal'" />
-            <param name="env.CLEAN_SPACE"     value="" />
-            <param name="env.FORCED_CLEANUP"  value="" />
-            <param name="env.PUBLISH"         value="" />
-            <param name="env.SPACE"           value="" />
-            <param name="env.DIR"             value="" />
-            <param name="env.FILE"            value="" />
-            <param name="env.LOG_LEVEL"       value="" />
+            <param name="env.URL" value="" />
+            <param name="env.USER" value="" />
+            <param name="env.PASSWORD" value="" spec="password display='normal'" />
+            <param name="env.CLEAN_SPACE" value="" />
+            <param name="env.FORCED_CLEANUP" value="" />
+            <param name="env.PUBLISH" value="" />
+            <param name="env.SPACE" value="" />
+            <param name="env.DIR" value="" />
+            <param name="env.FILE" value="" />
+            <param name="env.LOGLEVEL" value="" />
         </parameters>
         <build-runners>
             <runner name="Get Latest asciidoc2confluence.jar" type="simpleRunner">
@@ -27,23 +27,26 @@ curl -s -L --url $URL | tar xvz]]></param>
                 <parameters>
                     <param name="script.content"><![CDATA[#!/usr/bin/env bash
 
-# environment variables
-# ----------------------------
-# [O] CLEAN_SPACE
-# [O] FORCED_CLEANUP
-# [O] SPACE
-# [M] URL
-# [M] USER
-# [M] PASSWORD
-# [O] DIR
-# [O] FILE
-# [O] LOG_LEVEL
-# ----------------------------
-#
-# [O] - optional
-# [M] - mandatory
-#
-# ----------------------------
+function process_directory() {
+   java -jar asciidoc2confluence.jar \
+        --url=$URL --user=$USER      \
+        --pass=$PASSWORD             \
+        --dir="$1"                   \
+        $FLAGS
+}
+function process_file() {
+   java -jar asciidoc2confluence.jar \
+        --url=$URL --user=$USER      \
+        --pass=$PASSWORD             \
+        --input="$1"                 \
+        $FLAGS
+}
+function simple_run() {
+   java -jar asciidoc2confluence.jar \
+        --url=$URL --user=$USER      \
+        --pass=$PASSWORD             \
+        $FLAGS
+}
 
 # check mandatory arguments
 if [ -z "$URL" ]; then
@@ -62,6 +65,12 @@ fi
 # set run arguments
 FLAGS=""
 
+if [ -n "$LOGLEVEL" ]; then
+    export LOGLEVEL=$LOGLEVEL
+else
+    export LOGLEVEL=INFO
+fi
+
 if [ -n "$CLEAN_SPACE" ]; then
    FLAGS="$FLAGS --clean=$(echo $CLEAN_SPACE | tr -d ' ')"
 fi
@@ -74,22 +83,29 @@ if [ -n "$SPACE" ]; then
    FLAGS="$FLAGS --space=$SPACE"
 fi
 
+#if [ $PUBLISH ]; then
+#    if [ -n "$DIR" ]; then
+#       FLAGS="$FLAGS --dir=\"$DIR\""
+#    elif [ -n "$FILE" ]; then
+#       FLAGS="$FLAGS --input=\"$FILE\""
+#    fi
+#fi
+
+
+echo $FLAGS --file="$FILE" --dir="$DIR"
+
 
 if [ $PUBLISH ]; then
     if [ -n "$DIR" ]; then
-       FLAGS="$FLAGS --dir='$DIR'"
+       process_directory "$DIR"
     elif [ -n "$FILE" ]; then
-       FLAGS="$FLAGS --input='$FILE'"
+       process_file "$FILE"
+    else
+       simple_run
     fi
-fi
-
-if [ -n "$LOGLEVEL" ]; then
-    export LOGLEVEL=$LOG_LEVEL
-fi
-
-echo $FLAGS
-
-java -jar asciidoc2confluence.jar --url=$URL --user=$USER --pass=$PASSWORD $FLAGS]]></param>
+else
+    simple_run
+fi]]></param>
                     <param name="teamcity.step.mode" value="default" />
                     <param name="use.custom.script" value="true" />
                 </parameters>
@@ -112,5 +128,3 @@ java -jar asciidoc2confluence.jar --url=$URL --user=$USER --pass=$PASSWORD $FLAG
         <requirements />
     </settings>
 </meta-runner>
-
-
