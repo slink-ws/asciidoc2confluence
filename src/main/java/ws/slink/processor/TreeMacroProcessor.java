@@ -11,6 +11,8 @@ import java.util.Map;
 @Slf4j
 public class TreeMacroProcessor extends BlockMacroProcessor {
 
+    // https://confluence.atlassian.com/display/CONF55/Page+Tree+Macro
+
     @Override
     public Object process (StructuralNode parent, String target, Map<String, Object> attributes) {
         String content = new StringBuilder()

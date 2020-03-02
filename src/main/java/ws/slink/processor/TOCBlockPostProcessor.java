@@ -11,6 +11,8 @@ import java.util.Optional;
 @Slf4j
 public class TOCBlockPostProcessor extends Postprocessor {
 
+    // https://confluence.atlassian.com/display/CONF55/Table+of+Contents+Macro
+
     @Override
     public String process(Document document, String convertedDocument) {
         final org.jsoup.nodes.Document doc = Jsoup.parse(convertedDocument);

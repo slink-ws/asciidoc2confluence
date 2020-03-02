@@ -11,6 +11,11 @@ import org.jsoup.parser.Parser;
 @Slf4j
 public class NoticeBlockPostProcessor extends Postprocessor {
 
+    // https://confluence.atlassian.com/display/CONF55/Note+Macro
+    // https://confluence.atlassian.com/display/CONF55/Info+Macro
+    // https://confluence.atlassian.com/display/CONF55/Tip+Macro
+    // https://confluence.atlassian.com/display/CONF55/Warning+Macro
+
     @Override
     public String process(Document document, String convertedDocument) {
         final org.jsoup.nodes.Document doc = Jsoup.parse(convertedDocument);
@@ -30,9 +35,6 @@ public class NoticeBlockPostProcessor extends Postprocessor {
         return doc.body().toString();
     }
 
-
-    // see:
-    //    https://confluence.atlassian.com/display/CONF55/Note+Macro
     private String admonitionBlock(String noticeType, String content) {
         String confluenceNoticeType = getConfluenceNoticeType(noticeType);
         return new StringBuilder()

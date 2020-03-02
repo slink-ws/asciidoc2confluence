@@ -19,6 +19,8 @@ public class CodeBlockPostProcessor extends Postprocessor {
     private static final Pattern END_PATTERN     = Pattern.compile(CODE_END, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     private static final Pattern ONELINE_PATTERN = Pattern.compile(CODE_ONELINE, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
+    // https://confluence.atlassian.com/display/CONF55/Code+Block+Macro
+
     @Override
     public String process(Document document, String convertedDocument) {
         ThreadLocal<Boolean> inCodeBlock = ThreadLocal.withInitial(() -> false);
