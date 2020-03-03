@@ -145,11 +145,19 @@ To insert TOC macro in resulting confluence page use following syntax:
 ... the rest of document ...
 ```
 
-## Page tree
+## Page Tree
 You can insert confluence page tree macro into source asciidoc files to be rendered to confluence 
 [page tree](https://confluence.atlassian.com/display/CONF55/Page+Tree+Macro). Use following syntax:
 
 ```
 // pagetree::Root+page+name[]
+```
+
+## Children Display 
+You can insert confluence children display macro into source asciidoc files to be rendered to confluence 
+[children display](https://confluence.atlassian.com/display/CONF55/Children+Display+Macro). Use following syntax:
+
+```
+// children::Parent+page+name[]
 ```
 
