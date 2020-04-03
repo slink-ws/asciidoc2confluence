@@ -30,6 +30,12 @@ public class ImageBlockPostProcessor extends Postprocessor {
             element.removeClass("text-left");
         });
 
+        // process non-aligned images
+        doc.select("div.imageblock").stream().forEach(element -> {
+            updateImage(element, "");
+            element.removeClass("text-left");
+        });
+
         // process right-aligned images
         doc.select("div.imageblock.text-right").stream().forEach(element -> {
             updateImage(element, "image-right");
