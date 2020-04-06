@@ -24,6 +24,12 @@ public class ImageBlockPostProcessor extends Postprocessor {
             element.removeClass("text-center");
         });
 
+        // process right-aligned images
+        doc.select("div.imageblock.text-right").stream().forEach(element -> {
+            updateImage(element, "image-right");
+            element.removeClass("text-right");
+        });
+
         // process left-aligned images
         doc.select("div.imageblock.text-left").stream().forEach(element -> {
             updateImage(element, "");
@@ -34,12 +40,6 @@ public class ImageBlockPostProcessor extends Postprocessor {
         doc.select("div.imageblock").stream().forEach(element -> {
             updateImage(element, "");
             element.removeClass("text-left");
-        });
-
-        // process right-aligned images
-        doc.select("div.imageblock.text-right").stream().forEach(element -> {
-            updateImage(element, "image-right");
-            element.removeClass("text-right");
         });
 
         return doc.body().toString();
