@@ -161,3 +161,18 @@ You can insert confluence children display macro into source asciidoc files to b
 // children::Parent+page+name[]
 ```
 
+## Math formula support
+Formula support is implemented with help of [MathJax plugin](https://marketplace.atlassian.com/apps/1217196/mathjax?hosting=server&tab=support).
+Formulas can be inline `\(\sum_{i=0}^n i^2 = \frac{(n^2+n)(2n+1)}{6}\)` or block `\[\sum_{i=0}^n i^2 = \frac{(n^2+n)(2n+1)}{6}\]`.
+By default block-formulas are aligned to center. To align them left or right you need to add following definitions to global Confluence CSS: 
+```
+.math-left .mjx-chtml.MJXc-display {
+    text-align: left !important;
+ }
+.math-right .mjx-chtml.MJXc-display {
+    text-align: right !important;
+ }
+```
+Then you can use `\l` or `\r` in start of formula definition in source asciidoc file:
+`\[\l\sum_{i=0}^n i^2 = \frac{(n^2+n)(2n+1)}{6}\]` or `\[\r\sum_{i=0}^n i^2 = \frac{(n^2+n)(2n+1)}{6}\]`
+

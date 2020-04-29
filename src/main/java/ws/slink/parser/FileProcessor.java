@@ -109,6 +109,7 @@ public class FileProcessor {
         asciidoctor.javaExtensionRegistry().postprocessor(NoticeBlockPostProcessor.class);
         asciidoctor.javaExtensionRegistry().postprocessor(TOCBlockPostProcessor.class);
         asciidoctor.javaExtensionRegistry().postprocessor(ImageBlockPostProcessor.class);
+        asciidoctor.javaExtensionRegistry().postprocessor(LatexBlockPostProcessor.class);
 
         return asciidoctor;
     }
